@@ -1,18 +1,19 @@
 
 
+
 /*
-  TODO: Define a 3D vertex representation containing position (x, y, z)
-  and implement a transformation system that can translate, rotate, and scale vertices in 3D space.
+  Implement a 4×4 matrix system and use it to transform your 3D vertices through model, 
+  view, and projection transformations into clip space.  
 */
 
-#include <stdio.h>
+// TODO: test by applying transformation on the points 0101
+
+// TODO: implement view matrix
+// TODO: implement projection matrix
 
 #include "sdl_init.h"
 #include "mat.h"
 
-// we should test our functions and
-// mat_mul_mat they both are working so
-// final test is we need a point test if this test pass our task is complete we will do this in the another stream
 
 int main()
 {
