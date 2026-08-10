@@ -4,6 +4,8 @@
 #include "vec.h"
 #include <math.h>
 
+
+
 matrix make_translation_matrix(float tx, float ty, float tz)
 {
   return (matrix){
@@ -15,7 +17,9 @@ matrix make_translation_matrix(float tx, float ty, float tz)
       }};
 }
 
-matrix make_rotation_matrix(float yaw, float pitch, float roll)
+
+
+matrix make_rotation_matrix(float pitch, float yaw, float roll)
 {
 
   float alpha = yaw * DAG_TO_RADIANS;
@@ -76,4 +80,40 @@ matrix mat_mul_mat(matrix a, matrix b)
   }
 
   return result;
+}
+
+
+matrix make_view_matrix(vec3 eye, vec3 target) 
+{
+  vec3 forward = v3_normalize(v3_sub(eye, target));
+  vec3 right   = v3_cross((vec3){0.0,1.0,0.0},forward);
+  vec3 up      = v3_cross(forward,right);
+
+
+  return (matrix) {
+    .mat = {
+        {   right.x,   right.y,   right.z,  -v3_dot(right, eye)},
+        {      up.x,      up.y,      up.z,  -v3_dot(up, eye)},
+        { forward.x, forward.y, forward.z,  -v3_dot(forward, eye)},
+        {       0.0,       0.0,       0.0,   1.0}
+    }
+  };
+}
+
+
+matrix make_projection_matrix(int screen_width, int screen_height,
+                              float fov, float far, float near
+                              ) 
+{
+  float f = 1.0f / tanf(fov * 0.5f * DAG_TO_RADIANS);
+  float aspect = (float)screen_width / (float)screen_height;
+
+  return (matrix) {
+    .mat = {
+        { f / aspect, 0.0,                        0.0,  0.0},
+        {        0.0,   f,                        0.0,  0.0},
+        {        0.0, 0.0,        -far / (far - near), -1.0},
+        {        0.0, 0.0, -far * near / (far - near),  0.0},
+    }
+  };
 }
