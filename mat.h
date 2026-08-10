@@ -17,3 +17,4 @@ matrix make_view_matrix(vec3 eye, vec3 target);
 matrix make_projection_matrix(int screen_width, int screen_height,
                               float fov, float far, float near
                               );
+vec3 project_to_screen(vec4 clip_sp_points);

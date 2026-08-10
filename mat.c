@@ -3,7 +3,7 @@
 #include "mat.h"
 #include "vec.h"
 #include <math.h>
-
+#include "constant.h"
 
 
 matrix make_translation_matrix(float tx, float ty, float tz)
@@ -115,5 +115,24 @@ matrix make_projection_matrix(int screen_width, int screen_height,
         {        0.0, 0.0,        -far / (far - near), -1.0},
         {        0.0, 0.0, -far * near / (far - near),  0.0},
     }
+  };
+}
+
+vec3 project_to_screen(vec4 clip_sp_points)
+{
+  
+
+  float inw = 1.0 / clip_sp_points.w;
+  
+  float ndcx = clip_sp_points.x * inw;
+  float ndcy = clip_sp_points.y * inw;
+
+  float screen_x = (ndcx * 0.5 + 0.5) * WIDTH;
+  float screen_y = (-ndcy * 0.5 + 0.5) * HIEGHT;
+
+  return (vec3) {
+    .x = screen_x,
+    .y = screen_y,
+    .z = inw,
   };
 }
