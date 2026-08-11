@@ -53,8 +53,8 @@ mesh make_cube()
 
   int vert_indices_11[3] = {5,7,0};
   memcpy(triangles[10].vertices,vert_indices_11,sizeof(vert_indices_1));
-
-  int vert_indices_12[3] = {5,7,1};
+  // there was a bug here previous indcies was wrong
+  int vert_indices_12[3] = {5,0,3};
   memcpy(triangles[11].vertices,vert_indices_12,sizeof(vert_indices_1));
 
   cube.vertices = vertices;

@@ -96,7 +96,7 @@ int create_sdl_window()
     
     draw_wireframe(&cube, color, proj_matrix, frame_buffer);
     
-    rotation.y += 1.0;
+    // rotation.x += 1.0;
         
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
