@@ -1,7 +1,8 @@
 
-/*
-  Implement back-face culling so triangles facing away from the camera are rejected before rasterization.   
-*/
+/*  Implement a proper triangle rasterizer based on edge functions, and use it to determine pixel coverage 
+    without  relying on your previous triangle-filling method.
+*/    
+
 
 
 
