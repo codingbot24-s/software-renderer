@@ -29,6 +29,11 @@ void put_pixel(uint32_t *framebuffer, int x, int y, uint32_t color)
   framebuffer[y * WIDTH + x] = color;
 }
 
+
+
+
+
+// clears the framebuffer with given color 
 void clear_framebuffer(uint32_t *framebuffer, uint32_t color)
 {
   for (int r = 0; r < HIEGHT; ++r)
@@ -200,23 +205,25 @@ void fill_triangle(float x1, float y1, float z1,
   }
 }
 
+// now our task is complete we can think of how can we get red of extra lines
 void draw_wireframe(mesh* mesh, uint32_t color, matrix proj_matrix, uint32_t* framebuffer)
 {
-
   for (int i = 0; i < mesh->triangle_count; ++i) 
   {
-    // the bug is here we need to pass our transformed vertices 
-    // not original one
-    vec3 v1 = mesh->vertices[mesh->triangles[i].vertices[0]];
-    vec3 v2 = mesh->vertices[mesh->triangles[i].vertices[1]];
-    vec3 v3 = mesh->vertices[mesh->triangles[i].vertices[2]];
+    //TODO: the odin renderer is using orignal vertices here but we are using
+    // transformend 
+    // check why ?
+    vec3 v1 = mesh->transformed_vertices[mesh->triangles[i].vertices[0]];
+    vec3 v2 = mesh->transformed_vertices[mesh->triangles[i].vertices[1]];
+    vec3 v3 = mesh->transformed_vertices[mesh->triangles[i].vertices[2]];
 
     vec3 p1 = project_to_screen(v1,proj_matrix);
     vec3 p2 = project_to_screen(v2,proj_matrix);
     vec3 p3 = project_to_screen(v3,proj_matrix);
 
-
-    draw_triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,framebuffer ,color);
+    draw_line(framebuffer,p1.x, p1.y,p2.x, p2.y,color);
+    draw_line(framebuffer,p2.x, p2.y,p3.x, p3.y,color);
+    draw_line(framebuffer,p3.x, p3.y,p1.x, p1.y,color);
   }
 
 }

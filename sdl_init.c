@@ -14,7 +14,6 @@
 #include "vec.h"
 #include <stdlib.h>
 #include <float.h>
-#include <time.h>
 
 void clean_zbuffer(float *z_buffer);
 void apply_transformation(vec3* original_vert,
@@ -54,18 +53,12 @@ int create_sdl_window()
 
   float z_buffer[WIDTH * HIEGHT];
 
-  matrix t_matrix = make_translation_matrix(0.0, 0.0, 0.0);
-  matrix r_matrix = make_rotation_matrix(0.0, 0.0, 0.0);
-  matrix s_matrix = make_scaling_matrix(1.0,1.0,1.0);
-  matrix model_matrix = mat_mul_mat(t_matrix, mat_mul_mat(r_matrix,s_matrix));
-      
+  vec3 rotation = {0.0,0.0,0.0};
+     
   vec3 eye = (vec3){0.0,0.0,-3.0};
   vec3 target = (vec3){0.0,0.0,-1.0};
-  matrix view_matrix = make_view_matrix(eye,target);
-  matrix model_view_matrix = mat_mul_mat(view_matrix,model_matrix);
-   
+  
   mesh cube = make_cube();
-  apply_transformation(cube.vertices, cube.transformed_vertices, cube.vert_count, model_view_matrix);
   uint32_t color = 0x0000FF;
   matrix proj_matrix = make_projection_matrix(WIDTH, HIEGHT, FOV,FAR_PLANE,NEAR_PLANE);
     
@@ -86,10 +79,25 @@ int create_sdl_window()
       }
     }
 
+      
+    matrix t_matrix = make_translation_matrix(0.0, 0.0, 0.0);
+    matrix r_matrix = make_rotation_matrix(rotation.x, rotation.y,rotation.z);
+    matrix s_matrix = make_scaling_matrix(1.0,1.0,1.0);
+    matrix model_matrix = mat_mul_mat(t_matrix, mat_mul_mat(r_matrix,s_matrix));
+    matrix view_matrix = make_view_matrix(eye,target);
+    matrix model_view_matrix = mat_mul_mat(view_matrix,model_matrix);
+   
+    apply_transformation(cube.vertices, cube.transformed_vertices, cube.vert_count, model_view_matrix);
     clean_zbuffer(z_buffer);
+
+    // this will draw black full in every frame
+    clear_framebuffer(frame_buffer,0x000000);
+
     
     draw_wireframe(&cube, color, proj_matrix, frame_buffer);
-
+    
+    rotation.y += 1.0;
+        
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);

@@ -6,11 +6,12 @@
 */
 
 
+
+// for now our task is complete 
 #include "mat.h"
 #include "sdl_init.h"
 
 int main()
 {
-
   create_sdl_window();
 }
