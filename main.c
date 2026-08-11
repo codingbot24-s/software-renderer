@@ -1,8 +1,6 @@
 
 /*
-    Render a rotating 3D cube using your complete 
-    model → view → projection → perspective-divide → screen-space pipeline.
-      
+  Implement back-face culling so triangles facing away from the camera are rejected before rasterization.   
 */
 
 
