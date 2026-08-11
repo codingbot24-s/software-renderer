@@ -9,7 +9,9 @@
 #include "constant.h"
 #include "mesh.h"
 #include "vec.h"
+#include <stdbool.h>
 
+bool is_back_face(vec3 v1, vec3 v2, vec3 v3);
 
 uint32_t *create_framebuff()
 {
@@ -220,10 +222,29 @@ void draw_wireframe(mesh* mesh, uint32_t color, matrix proj_matrix, uint32_t* fr
     vec3 p1 = project_to_screen(v1,proj_matrix);
     vec3 p2 = project_to_screen(v2,proj_matrix);
     vec3 p3 = project_to_screen(v3,proj_matrix);
-
+    
+    // we should check here for back face culling
+    if (is_back_face(v1,v2,v3)) {
+      continue;
+    } 
     draw_line(framebuffer,p1.x, p1.y,p2.x, p2.y,color);
     draw_line(framebuffer,p2.x, p2.y,p3.x, p3.y,color);
     draw_line(framebuffer,p3.x, p3.y,p1.x, p1.y,color);
   }
 
+}
+
+
+bool is_back_face(vec3 v1, vec3 v2, vec3 v3)
+{
+  vec3 edge_1 = v3_sub(v2, v1);
+  vec3 edge_2 = v3_sub(v3, v1);
+
+  vec3 cross  = v3_cross(edge_1, edge_2);
+  vec3 cross_norm = v3_normalize(cross);
+  vec3 to_camera = v3_normalize(v1);
+
+  float dot = v3_dot(cross_norm, to_camera);
+
+  return dot >= 0.0;
 }
