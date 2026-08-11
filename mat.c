@@ -65,6 +65,17 @@ vec4 matrix_mul_vec4(matrix matrix, vec4 vec)
   return res;
 }
 
+
+vec3 matrix_mul_vec3(matrix matrix, vec3 vec) 
+{
+  vec3 res;
+  res.x = matrix.mat[0][0] * vec.x + matrix.mat[0][1] * vec.y + matrix.mat[0][2] * vec.z + matrix.mat[0][3]; 
+  res.y = matrix.mat[1][0] * vec.x + matrix.mat[1][1] * vec.y + matrix.mat[1][2] * vec.z + matrix.mat[1][3]; 
+  res.z = matrix.mat[2][0] * vec.x + matrix.mat[2][1] * vec.y + matrix.mat[2][2] * vec.z + matrix.mat[2][3]; 
+  return res;   
+}
+
+
 matrix mat_mul_mat(matrix a, matrix b)
 {
   matrix result;
@@ -118,10 +129,10 @@ matrix make_projection_matrix(int screen_width, int screen_height,
   };
 }
 
-vec3 project_to_screen(vec4 clip_sp_points)
+// point is view space point 
+vec3 project_to_screen(vec3 point,matrix proj_matrix)
 {
-  
-
+  vec4 clip_sp_points = matrix_mul_vec4(proj_matrix,(vec4){point.x,point.y,point.z,1.0});
   float inw = 1.0 / clip_sp_points.w;
   
   float ndcx = clip_sp_points.x * inw;

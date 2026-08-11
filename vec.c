@@ -2,6 +2,8 @@
 #include "vec.h"
 #include <math.h>
 
+
+// WE WILL DEBUG THIS IN ANOTHER STREAM
 vec3 v3_init(float x, float y, float z)
 {
   return (vec3){

@@ -16,7 +16,9 @@ add_executable(c main.c
         vec.c
         mat.c
         mat.h
-        constant.h)
+        constant.h
+        mesh.h
+        mesh.c)
 
 target_link_libraries(c PRIVATE
         SDL3::SDL3
