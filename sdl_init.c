@@ -2,6 +2,7 @@
 // Created by saad on 8/3/26.
 //
 
+// we need to solve the bug 
 #include "sdl_init.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_events.h>
@@ -61,7 +62,21 @@ int create_sdl_window()
   mesh cube = make_cube();
   uint32_t color = 0x0000FF;
   matrix proj_matrix = make_projection_matrix(WIDTH, HIEGHT, FOV,FAR_PLANE,NEAR_PLANE);
-    
+
+  vec3 a;
+  a.x = 0;
+  a.y = 10;
+  a.z = 0;
+
+  vec3 b;
+  b.x = -8;
+  b.y = -6;
+  b.z = 0;
+
+  vec3 c;
+  c.x = 8;
+  c.y = -6;
+  c.y = 0;
     
   SDL_Event event;
   while (running == true)
@@ -92,12 +107,13 @@ int create_sdl_window()
 
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer,0x000000);
-
+    // we just need to draw traingle with our new function 
     
-    draw_wireframe(&cube, color, proj_matrix, frame_buffer);
+    // draw_wireframe(&cube, color, proj_matrix, frame_buffer);
     
     // rotation.x += 1.0;
-        
+
+    fill_triangle(a,  b, c, frame_buffer, color,z_buffer);    
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);

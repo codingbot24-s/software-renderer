@@ -123,91 +123,10 @@ void swap(float *a, float *b)
   *b = temp;
 }
 
-void fill_triangle(float x1, float y1, float z1,
-                   float x2, float y2, float z2,
-                   float x3, float y3, float z3,
-                   uint32_t *framebuffer, uint32_t color,
-                   float *zbuffer)
-{
-  // y1 > it means a.y if its is more then y2 == b.y
-  // this means a is more down in the space
-  // this is cofusing we should we implement vectors
 
-  // TODO: test this sort with swap
-  if (y1 > y2)
-  {
-    swap(&x1, &x2);
-    swap(&y1, &y2);
-    swap(&z1, &z2);
-  }
 
-  if (y1 > y3)
-  {
-    swap(&x1, &x3);
-    swap(&y1, &y3);
-    swap(&z1, &z3);
-  }
 
-  if (y2 > y3)
-  {
-    swap(&y2, &y3);
-    swap(&x2, &x3);
-    swap(&z2, &z3);
-  }
-  // full distance of c to a in y
-  // NOTE: possible division by 0 if all of them on solve this
-  float distance_c_to_a = y3 - y1;
-  // not the flat top
-  if (y2 != y1)
-  {
-    // distance of b ----> a in y
-    // one segment hieght
-    float distance_b_to_a = y2 - y1;
-    for (int y = y1; y < y2; y++)
-    {
-      float f_x = x1 + ((x3 - x1) * (y - y1)) / distance_c_to_a;
-      float s_x = x1 + ((x2 - x1) * (y - y1)) / distance_b_to_a;
-      float left_z = z1 + ((z2 - z1) * (y - y1)) / distance_b_to_a;
-      float right_z = z1 + ((z3 - z1) * (y - y1)) / distance_c_to_a;
-      for (int x = fmin(f_x, s_x); x < fmax(f_x, s_x); x++)
-      {
-        float z = right_z + (left_z - right_z) * (x - f_x) / (s_x - f_x);
-        int zindex = y * WIDTH + x;
-        if (z < zbuffer[zindex])
-        {
-          zbuffer[zindex] = z;
-          put_pixel(framebuffer, x, y, color);
-        }
-      }
-    }
-  }
-  // not the flat bottom
-  if (y2 != y3)
-  {
-    // distance of c ----> b in y
-    // one segment hieght
-    int distance_c_to_b = y3 - y2;
-    for (int y = y2; y <= y3; y++)
-    {
-      float f_x = x1 + ((x3 - x1) * (y - y1)) / distance_c_to_a;
-      float left_z = z2 + ((z3 - z2) * (y - y2)) / distance_c_to_b;
-      float right_z = z1 + ((z3 - z1) * (y - y1)) / distance_c_to_a;
-      float s_x = x2 + ((x3 - x2) * (y - y2)) / distance_c_to_b;
-      for (int x = fmin(f_x, s_x); x < fmax(f_x, s_x); x++)
-      {
-        float z = right_z + (left_z - right_z) * (x - f_x) / (s_x - f_x);
-        int zindex = y * WIDTH + x;
-        if (z < zbuffer[zindex])
-        {
-          zbuffer[zindex] = z;
-          put_pixel(framebuffer, x, y, color);
-        }
-      }
-    }
-  }
-}
 
-// now our task is complete we can think of how can we get red of extra lines
 void draw_wireframe(mesh* mesh, uint32_t color, matrix proj_matrix, uint32_t* framebuffer)
 {
   for (int i = 0; i < mesh->triangle_count; ++i) 
@@ -247,4 +166,34 @@ bool is_back_face(vec3 v1, vec3 v2, vec3 v3)
   float dot = v3_dot(cross_norm, to_camera);
 
   return dot >= 0.0;
+}
+
+
+bool edge(vec3 a, vec3 b,vec3 c)
+{
+  return ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x) >= 0);
+}
+
+
+// we are loopin in the whole framebuffer this is not optimized 
+void fill_triangle(vec3 a, vec3 b, vec3 c,
+                  uint32_t* framebuffer, uint32_t color, float *zbuffer
+               )
+{
+
+  for(int i = 0; i < HIEGHT; ++i)
+  {
+    for (int j = 0; j < WIDTH; ++j)
+    {
+      vec3 point = (vec3){i+ 0.5f,j+0.5f,0.0};
+      bool w0 = edge(a,b,point);
+      bool w1 = edge(b,c,point);
+      bool w2 = edge(c,a,point);
+
+      if (w0 && w1 && w2) {
+        put_pixel(framebuffer, point.x, point.y,color);
+      }
+      
+    }
+  }
 }

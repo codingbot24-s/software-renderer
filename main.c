@@ -5,7 +5,6 @@
 
 
 
-
 // for now our task is complete 
 #include "mat.h"
 #include "sdl_init.h"

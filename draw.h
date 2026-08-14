@@ -20,13 +20,11 @@ void draw_line(uint32_t *framebuffer, float x1, float y1,
 
 void draw_triangle(float x1, float y1, float x2, float y2,
                    float x3, float y3, uint32_t *framebuffer, uint32_t color);
-
-void fill_triangle(float x1, float y1, float z1,
-                   float x2, float y2, float z2,
-                   float x3, float y3, float z3,
-                   uint32_t *framebuffer, uint32_t color, float *zbuffer);
-
-
 void draw_wireframe(mesh* mesh, uint32_t color,matrix proj_matrix, uint32_t* framebuffer);
+
+
+void fill_triangle(vec3 a, vec3 b, vec3 c,
+                  uint32_t* framebuffer, uint32_t color, float *zbuffer
+               );
 
 #endif // C_DRAW_H
