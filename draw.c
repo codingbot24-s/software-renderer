@@ -10,6 +10,7 @@
 #include "mesh.h"
 #include "vec.h"
 #include <stdbool.h>
+#include <sys/types.h>
 
 bool is_back_face(vec3 v1, vec3 v2, vec3 v3);
 
@@ -169,31 +170,32 @@ bool is_back_face(vec3 v1, vec3 v2, vec3 v3)
 }
 
 
-bool edge(vec3 a, vec3 b,vec3 c)
+bool edge_function(vec3 a, vec3 b, vec3 p)
 {
-  return ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x) >= 0);
+  return ((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x) >= 0);
 }
 
 
-// we are loopin in the whole framebuffer this is not optimized 
-void fill_triangle(vec3 a, vec3 b, vec3 c,
-                  uint32_t* framebuffer, uint32_t color, float *zbuffer
-               )
+// but we are going on the every pixel 
+// and this is not optimized 
+void fill_triangle(vec3 a, vec3 b, vec3 c, 
+                   uint32_t* framebuffer, uint32_t color, 
+                   float* zbuffer)
 {
-
-  for(int i = 0; i < HIEGHT; ++i)
+  for (int i = 0; i < HIEGHT; i++) 
   {
-    for (int j = 0; j < WIDTH; ++j)
+    for (int j = 0; j < WIDTH; j++) 
     {
-      vec3 point = (vec3){i+ 0.5f,j+0.5f,0.0};
-      bool w0 = edge(a,b,point);
-      bool w1 = edge(b,c,point);
-      bool w2 = edge(c,a,point);
-
+      vec3 point = (vec3){j + 0.5, i + 0.5, 0.0};
+          
+      bool w0 = edge_function(a, b, point);
+      bool w1 = edge_function(b, c, point);
+      bool w2 = edge_function(c, a, point);
+        
       if (w0 && w1 && w2) {
-        put_pixel(framebuffer, point.x, point.y,color);
+        put_pixel(framebuffer, point.x, point.y, color);
       }
-      
+        
     }
   }
 }

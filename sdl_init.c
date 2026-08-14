@@ -62,22 +62,11 @@ int create_sdl_window()
   mesh cube = make_cube();
   uint32_t color = 0x0000FF;
   matrix proj_matrix = make_projection_matrix(WIDTH, HIEGHT, FOV,FAR_PLANE,NEAR_PLANE);
-
-  vec3 a;
-  a.x = 0;
-  a.y = 10;
-  a.z = 0;
-
-  vec3 b;
-  b.x = -8;
-  b.y = -6;
-  b.z = 0;
-
-  vec3 c;
-  c.x = 8;
-  c.y = -6;
-  c.y = 0;
-    
+  // triangle vertices 
+    vec3 a = {491.407, 411.407};
+    vec3 b = {148.593, 68.5928};
+    vec3 c = {148.593, 411.407};
+  
   SDL_Event event;
   while (running == true)
   {

@@ -5,7 +5,9 @@
 
 
 
-// for now our task is complete 
+
+// our task is complete now
+
 #include "mat.h"
 #include "sdl_init.h"
 
