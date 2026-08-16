@@ -12,5 +12,4 @@
 #define NEAR_PLANE 1.0
 #define FAR_PLANE 100.0
 
-
 #endif // C_CONSTANT_H

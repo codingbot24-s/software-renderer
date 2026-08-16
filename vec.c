@@ -2,7 +2,6 @@
 #include "vec.h"
 #include <math.h>
 
-
 // WE WILL DEBUG THIS IN ANOTHER STREAM
 vec3 v3_init(float x, float y, float z)
 {
@@ -13,8 +12,7 @@ vec3 v3_init(float x, float y, float z)
   };
 }
 
-
-vec3 v3_sub(vec3 a, vec3 b) 
+vec3 v3_sub(vec3 a, vec3 b)
 {
   vec3 res;
   res.x = a.x - b.x;
@@ -24,7 +22,7 @@ vec3 v3_sub(vec3 a, vec3 b)
   return res;
 }
 
-vec3 v3_normalize(vec3 v) 
+vec3 v3_normalize(vec3 v)
 {
   vec3 res;
   float len = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -33,11 +31,10 @@ vec3 v3_normalize(vec3 v)
   res.y = v.y / len;
   res.z = v.z / len;
 
-
   return res;
 }
 
-vec3 v3_cross(vec3 a, vec3 b) 
+vec3 v3_cross(vec3 a, vec3 b)
 {
   vec3 result;
   result.x = a.y * b.z - a.z * b.y;
@@ -46,14 +43,12 @@ vec3 v3_cross(vec3 a, vec3 b)
   return result;
 }
 
-
-float  v3_dot(vec3 a,vec3 b) 
+float v3_dot(vec3 a, vec3 b)
 {
   // the bug was here
   float result = (a.x * b.x + a.y * b.y + a.z * b.z);
-  return result;    
+  return result;
 }
-
 
 vec4 v4_init(float x, float y, float z, float w)
 {

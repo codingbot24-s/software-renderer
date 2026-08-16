@@ -1,14 +1,16 @@
 
-/*  Implement a proper triangle rasterizer based on edge functions, and use it to determine pixel coverage 
-    without  relying on your previous triangle-filling method.
-*/    
 
 
+/*
+  Add perspective-correct interpolation for per-vertex attributes across your triangles, 
+  and verify it using a smoothly varying vertex color across a 3D triangle.
+*/
 
 
-// our task is complete now
+// our task is to draw a color full triangle  
+// currently our triangle is like this 
+// now our task is complete
 
-#include "mat.h"
 #include "sdl_init.h"
 
 int main()

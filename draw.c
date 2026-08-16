@@ -32,11 +32,7 @@ void put_pixel(uint32_t *framebuffer, int x, int y, uint32_t color)
   framebuffer[y * WIDTH + x] = color;
 }
 
-
-
-
-
-// clears the framebuffer with given color 
+// clears the framebuffer with given color
 void clear_framebuffer(uint32_t *framebuffer, uint32_t color)
 {
   for (int r = 0; r < HIEGHT; ++r)
@@ -124,43 +120,38 @@ void swap(float *a, float *b)
   *b = temp;
 }
 
-
-
-
-
-void draw_wireframe(mesh* mesh, uint32_t color, matrix proj_matrix, uint32_t* framebuffer)
+void draw_wireframe(mesh *mesh, uint32_t color, matrix proj_matrix, uint32_t *framebuffer)
 {
-  for (int i = 0; i < mesh->triangle_count; ++i) 
+  for (int i = 0; i < mesh->triangle_count; ++i)
   {
-    //TODO: the odin renderer is using orignal vertices here but we are using
-    // transformend 
-    // check why ?
+    // TODO: the odin renderer is using orignal vertices here but we are using
+    //  transformend
+    //  check why ?
     vec3 v1 = mesh->transformed_vertices[mesh->triangles[i].vertices[0]];
     vec3 v2 = mesh->transformed_vertices[mesh->triangles[i].vertices[1]];
     vec3 v3 = mesh->transformed_vertices[mesh->triangles[i].vertices[2]];
 
-    vec3 p1 = project_to_screen(v1,proj_matrix);
-    vec3 p2 = project_to_screen(v2,proj_matrix);
-    vec3 p3 = project_to_screen(v3,proj_matrix);
-    
+    vec3 p1 = project_to_screen(v1, proj_matrix);
+    vec3 p2 = project_to_screen(v2, proj_matrix);
+    vec3 p3 = project_to_screen(v3, proj_matrix);
+
     // we should check here for back face culling
-    if (is_back_face(v1,v2,v3)) {
+    if (is_back_face(v1, v2, v3))
+    {
       continue;
-    } 
-    draw_line(framebuffer,p1.x, p1.y,p2.x, p2.y,color);
-    draw_line(framebuffer,p2.x, p2.y,p3.x, p3.y,color);
-    draw_line(framebuffer,p3.x, p3.y,p1.x, p1.y,color);
+    }
+    draw_line(framebuffer, p1.x, p1.y, p2.x, p2.y, color);
+    draw_line(framebuffer, p2.x, p2.y, p3.x, p3.y, color);
+    draw_line(framebuffer, p3.x, p3.y, p1.x, p1.y, color);
   }
-
 }
-
 
 bool is_back_face(vec3 v1, vec3 v2, vec3 v3)
 {
   vec3 edge_1 = v3_sub(v2, v1);
   vec3 edge_2 = v3_sub(v3, v1);
 
-  vec3 cross  = v3_cross(edge_1, edge_2);
+  vec3 cross = v3_cross(edge_1, edge_2);
   vec3 cross_norm = v3_normalize(cross);
   vec3 to_camera = v3_normalize(v1);
 
@@ -169,33 +160,68 @@ bool is_back_face(vec3 v1, vec3 v2, vec3 v3)
   return dot >= 0.0;
 }
 
-
-bool edge_function(vec3 a, vec3 b, vec3 p)
+float edge_function(vec3 a, vec3 b, vec3 p)
 {
-  return ((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x) >= 0);
+  return (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);
 }
 
+// pass three color here
+// and calculate by bc cordinate the color of triangles
 
-// but we are going on the every pixel 
-// and this is not optimized 
-void fill_triangle(vec3 a, vec3 b, vec3 c, 
-                   uint32_t* framebuffer, uint32_t color, 
-                   float* zbuffer)
+void fill_triangle(vec3 a, vec3 b, vec3 c,
+                   uint32_t *framebuffer, float *zbuffer,
+                   uint32_t color1,
+                   uint32_t color2,
+                   uint32_t color3)
 {
-  for (int i = 0; i < HIEGHT; i++) 
+
+  // float to interger conversion
+  int minx = fminf(a.x, fminf(b.x, c.x));
+  int maxx = fmaxf(a.x, fmaxf(b.x, c.x));
+
+  int miny = fminf(a.y, fminf(b.y, c.y));
+  int maxy = fmaxf(a.y, fmaxf(b.y, c.y));
+
+  float bt_area = edge_function(a, b, c);
+
+  // w0 * c0[0] + w1 * c1[0] + w2 * c2[0]
+
+  for (int i = miny; i < maxy; i++)
   {
-    for (int j = 0; j < WIDTH; j++) 
+    for (int j = minx; j < maxx; j++)
     {
       vec3 point = (vec3){j + 0.5, i + 0.5, 0.0};
-          
-      bool w0 = edge_function(a, b, point);
-      bool w1 = edge_function(b, c, point);
-      bool w2 = edge_function(c, a, point);
-        
-      if (w0 && w1 && w2) {
+
+      float w0 = edge_function(a, b, point);
+      float w1 = edge_function(b, c, point);
+      float w2 = edge_function(c, a, point);
+
+      float c0r = (color1 >> 16) & 0xFF;
+      float c0g = (color1 >> 8) & 0xFF;
+      float c0b = (color1) & 0xFF;
+
+      float c1r = (color2 >> 16) & 0xFF;
+      float c1g = (color2 >> 8) & 0xFF;
+      float c1b = (color2) & 0xFF;
+
+      float c2r = (color3 >> 16) & 0xFF;
+      float c2g = (color3 >> 8) & 0xFF;
+      float c2b = (color3) & 0xFF;
+
+      if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0))
+      {
+        w0 /= bt_area;
+        w1 /= bt_area;
+        w2 /= bt_area;
+
+        float r = w0 * c0r + w1 * c1r + w2 * c2r;
+        float g = w0 * c0g + w1 * c1g + w2 * c2g;
+        float b = w0 * c0b + w1 * c1b + w2 * c2b;
+
+        uint32_t color = ((uint32_t)r << 16) | ((uint32_t)g << 8) | ((uint32_t)b);
+
         put_pixel(framebuffer, point.x, point.y, color);
       }
-        
     }
   }
 }
