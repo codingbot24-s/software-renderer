@@ -220,6 +220,10 @@ void fill_triangle(vec3 a, vec3 b, vec3 c,
 
         uint32_t color = ((uint32_t)r << 16) | ((uint32_t)g << 8) | ((uint32_t)b);
 
+        //TODO: add zbuffer test before putting pixel
+        if () {
+        
+        }
         put_pixel(framebuffer, point.x, point.y, color);
       }
     }

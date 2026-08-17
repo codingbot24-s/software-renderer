@@ -2,14 +2,14 @@
 
 
 /*
-  Add perspective-correct interpolation for per-vertex attributes across your triangles, 
+  TODO:Add perspective-correct interpolation for per-vertex attributes across your triangles, 
   and verify it using a smoothly varying vertex color across a 3D triangle.
 */
 
-
-// our task is to draw a color full triangle  
-// currently our triangle is like this 
-// now our task is complete
+/*
+  Implement a texture system 
+  that can load an image into CPU memory and sample a texel using UV coordinates.
+*/
 
 #include "sdl_init.h"
 
