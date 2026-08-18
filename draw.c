@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
+
 bool is_back_face(vec3 v1, vec3 v2, vec3 v3);
 
 uint32_t *create_framebuff()
@@ -165,20 +166,27 @@ float edge_function(vec3 a, vec3 b, vec3 p)
 // pass three color here
 // and calculate by bc cordinate the color of triangles
 
-void fill_triangle(vec3 a, vec3 b, vec3 c,
+
+/// for testing the fill vertices we need to pass the
+/// projection matrix here with project to screen do this
+///
+void fill_triangle(vec3 p1, vec3 p2, vec3 p3,
                    uint32_t *framebuffer, float *zbuffer,
+                   matrix proj_matrix,
                    uint32_t color1,
                    uint32_t color2,
                    uint32_t color3)
 {
-
+  vec3 a = project_to_screen(p1,proj_matrix);
+  vec3 b = project_to_screen(p2,proj_matrix);
+  vec3 c = project_to_screen(p3,proj_matrix);
   // float to interger conversion
   int minx = fminf(a.x, fminf(b.x, c.x));
   int maxx = fmaxf(a.x, fmaxf(b.x, c.x));
 
   int miny = fminf(a.y, fminf(b.y, c.y));
   int maxy = fmaxf(a.y, fmaxf(b.y, c.y));
-
+    
   float bt_area = edge_function(a, b, c);
   // edge function formula
   // w0 * c0[0] + w1 * c1[0] + w2 * c2[0]
@@ -187,9 +195,7 @@ void fill_triangle(vec3 a, vec3 b, vec3 c,
   {
     for (int j = minx; j < maxx; j++)
     {
-      // is the problem is this point
       vec3 point = (vec3){j + 0.5, i + 0.5, 0.0};
-      // we will debug this in next stream
       float w0 = edge_function(a, b, point);
       float w1 = edge_function(b, c, point);
       float w2 = edge_function(c, a, point);
@@ -214,9 +220,9 @@ void fill_triangle(vec3 a, vec3 b, vec3 c,
         // NOTE this is normal barycentric cordinate
         //  this will not work after prespective divide
         //  this wiegths will not work
-        //  float red = w0 * c0r + w1 * c1r + w2 * c2r;
-        //  float green = w0 * c0g + w1 * c1g + w2 * c2g;
-        //  float blue = w0 * c0b + w1 * c1b + w2 * c2b;
+        //float red = w0 * c0r + w1 * c1r + w2 * c2r;
+        //float green = w0 * c0g + w1 * c1g + w2 * c2g;
+        //float blue = w0 * c0b + w1 * c1b + w2 * c2b;
 
         // these are the steps for completing this todo
         // 1. we need to find the inverse w of this pixel by wieght of point and vertices inw
@@ -226,7 +232,6 @@ void fill_triangle(vec3 a, vec3 b, vec3 c,
 
         float pixel_inw = w0 * a.z + w1 * b.z + w2 * c.z;
 
-        // the formula is wrong notice b in three space
         // vertex inverse colors
         float v1_cr = c0r * a.z;
         float v1_cg = c0g * a.z;
@@ -249,6 +254,7 @@ void fill_triangle(vec3 a, vec3 b, vec3 c,
         float green = g_over_piverse / pixel_inw;
         float blue = b_over_piverse / pixel_inw;
 
+        
         uint32_t color = ((uint32_t)red << 16) | ((uint32_t)green << 8) | ((uint32_t)blue);
 
         // TODO: add zbuffer test before putting pixel

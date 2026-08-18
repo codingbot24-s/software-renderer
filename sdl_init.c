@@ -62,22 +62,22 @@ int create_sdl_window()
   mesh cube = make_cube();
   matrix proj_matrix = make_projection_matrix(WIDTH, HIEGHT, FOV, FAR_PLANE, NEAR_PLANE);
   // triangle vertices
-  vec3 a = {491.407, 411.407, 82};
-  vec3 b = {148.593, 68.5928, 44};
-  vec3 c = {148.593, 411.407, 114};
   uint32_t color1 = 0xFF0000;
   uint32_t color2 = 0x00FF00;
   uint32_t color3 = 0x0000FF;
-  //TODO: free this after testing 
-  // we can try this 
-  vec3* t_vertices = malloc(3* sizeof(vec3));
-  t_vertices[0] = (vec3){491.407, 411.407, 82};  
-  t_vertices[1] = (vec3){148.593, 68.5928, 44};
-  t_vertices[2] = (vec3){148.593, 411.407, 114};  
-
-  vec3* tt_vertices = malloc(3* sizeof(vec3));
-
   
+  // TODO: free this after testing
+  //  we can try this
+  //
+  // NOTE: we are not using create mesh function
+  //      this are hadcoded string
+  vec3 *t_vertices = malloc(3 * sizeof(vec3));
+  t_vertices[0] = (vec3){-20, -15, 40};
+  t_vertices[1] = (vec3){15, -10, 80};
+  t_vertices[2] = (vec3){5,  20, 120};
+
+  vec3 *tt_vertices = malloc(3 * sizeof(vec3));
+
   SDL_Event event;
   while (running == true)
   {
@@ -102,13 +102,14 @@ int create_sdl_window()
     matrix model_view_matrix = mat_mul_mat(view_matrix, model_matrix);
 
     apply_transformation(t_vertices, tt_vertices, 3, model_view_matrix);
-    
+
     clean_zbuffer(z_buffer);
 
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer, 0x000000);
-    
-    fill_triangle(tt_vertices[0], tt_vertices[1], tt_vertices[2], frame_buffer, z_buffer, color1,color2,color3);
+
+    fill_triangle(tt_vertices[0],tt_vertices[1],tt_vertices[2],frame_buffer, z_buffer,proj_matrix,color1, color2, color3);
+
     // rotation.x += 1.0;
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
