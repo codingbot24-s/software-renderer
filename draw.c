@@ -123,7 +123,7 @@ void draw_wireframe(mesh *mesh, uint32_t color, matrix proj_matrix, uint32_t *fr
 {
   for (int i = 0; i < mesh->triangle_count; ++i)
   {
-    
+
     vec3 v1 = mesh->transformed_vertices[mesh->triangles[i].vertices[0]];
     vec3 v2 = mesh->transformed_vertices[mesh->triangles[i].vertices[1]];
     vec3 v3 = mesh->transformed_vertices[mesh->triangles[i].vertices[2]];
@@ -211,50 +211,50 @@ void fill_triangle(vec3 a, vec3 b, vec3 c,
         w0 /= bt_area;
         w1 /= bt_area;
         w2 /= bt_area;
-        //NOTE this is normal barycentric cordinate 
-        // this will not work after prespective divide
-        // this wiegths will not work
-        // float red = w0 * c0r + w1 * c1r + w2 * c2r;
-        // float green = w0 * c0g + w1 * c1g + w2 * c2g;
-        // float blue = w0 * c0b + w1 * c1b + w2 * c2b;
-        
+        // NOTE this is normal barycentric cordinate
+        //  this will not work after prespective divide
+        //  this wiegths will not work
+        //  float red = w0 * c0r + w1 * c1r + w2 * c2r;
+        //  float green = w0 * c0g + w1 * c1g + w2 * c2g;
+        //  float blue = w0 * c0b + w1 * c1b + w2 * c2b;
+
         // these are the steps for completing this todo
         // 1. we need to find the inverse w of this pixel by wieght of point and vertices inw
-        // 2. then we need to find the vertex colors over vertex inversewi 
-        // 3. then we need to find the pixel color over its inversew 
-        // 4. divide pixel color with pixel inversew 
-        
+        // 2. then we need to find the vertex colors over vertex inversewi
+        // 3. then we need to find the pixel color over its inversew
+        // 4. divide pixel color with pixel inversew
+
         float pixel_inw = w0 * a.z + w1 * b.z + w2 * c.z;
 
         // the formula is wrong notice b in three space
         // vertex inverse colors
-        float v1_cr = c0r * a.z;    
-        float v1_cg = c0b * a.z;    
-        float v1_cb = c0b * a.z;    
+        float v1_cr = c0r * a.z;
+        float v1_cg = c0g * a.z;
+        float v1_cb = c0b * a.z;
 
-        float v2_cr = c1r * b.z;    
-        float v2_cg = c1b * b.z;    
-        float v2_cb = c1b * b.z;    
-        
-        float v3_cr = c2r * c.z;    
-        float v3_cg = c2b * c.z;    
-        float v3_cb = c2b * c.z;    
+        float v2_cr = c1r * b.z;
+        float v2_cg = c1g * b.z;
+        float v2_cb = c1b * b.z;
+
+        float v3_cr = c2r * c.z;
+        float v3_cg = c2g * c.z;
+        float v3_cb = c2b * c.z;
 
         // if not work we need to check this values
         float r_over_piverse = w0 * v1_cr + w1 * v2_cr + w2 * v3_cr;
         float g_over_piverse = w0 * v1_cg + w1 * v2_cg + w2 * v3_cg;
         float b_over_piverse = w0 * v1_cb + w1 * v2_cb + w2 * v3_cb;
-  
+
         float red = r_over_piverse / pixel_inw;
         float green = g_over_piverse / pixel_inw;
         float blue = b_over_piverse / pixel_inw;
-        
+
         uint32_t color = ((uint32_t)red << 16) | ((uint32_t)green << 8) | ((uint32_t)blue);
 
-        //TODO: add zbuffer test before putting pixel
-        //if () {
+        // TODO: add zbuffer test before putting pixel
+        // if () {
         //
-        //}
+        // }
         put_pixel(framebuffer, point.x, point.y, color);
       }
     }
