@@ -122,10 +122,11 @@ vec3 project_to_screen(vec3 point, matrix proj_matrix)
 {
   vec4 clip_sp_points = matrix_mul_vec4(proj_matrix, (vec4){point.x, point.y, point.z, 1.0});
   float inw = 1.0 / clip_sp_points.w;
-
+  
+  // add ndcz  
   float ndcx = clip_sp_points.x * inw;
   float ndcy = clip_sp_points.y * inw;
-
+    
   float screen_x = (ndcx * 0.5 + 0.5) * WIDTH;
   float screen_y = (-ndcy * 0.5 + 0.5) * HIEGHT;
 

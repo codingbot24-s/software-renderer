@@ -7,7 +7,7 @@
 */
 
 /*
-  Implement a texture system 
+  TODO:Implement a texture system 
   that can load an image into CPU memory and sample a texel using UV coordinates.
 */
 

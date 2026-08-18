@@ -6,6 +6,7 @@
 #include "sdl_init.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -59,17 +60,24 @@ int create_sdl_window()
   vec3 target = (vec3){0.0, 0.0, -1.0};
 
   mesh cube = make_cube();
-  uint32_t color = 0x0000FF;
   matrix proj_matrix = make_projection_matrix(WIDTH, HIEGHT, FOV, FAR_PLANE, NEAR_PLANE);
   // triangle vertices
-  vec3 a = {491.407, 411.407};
-  vec3 b = {148.593, 68.5928};
-  vec3 c = {148.593, 411.407};
+  vec3 a = {491.407, 411.407, 82};
+  vec3 b = {148.593, 68.5928, 44};
+  vec3 c = {148.593, 411.407, 114};
   uint32_t color1 = 0xFF0000;
   uint32_t color2 = 0x00FF00;
   uint32_t color3 = 0x0000FF;
-  
+  //TODO: free this after testing 
+  // we can try this 
+  vec3* t_vertices = malloc(3* sizeof(vec3));
+  t_vertices[0] = (vec3){491.407, 411.407, 82};  
+  t_vertices[1] = (vec3){148.593, 68.5928, 44};
+  t_vertices[2] = (vec3){148.593, 411.407, 114};  
 
+  vec3* tt_vertices = malloc(3* sizeof(vec3));
+
+  
   SDL_Event event;
   while (running == true)
   {
@@ -93,17 +101,15 @@ int create_sdl_window()
     matrix view_matrix = make_view_matrix(eye, target);
     matrix model_view_matrix = mat_mul_mat(view_matrix, model_matrix);
 
-    apply_transformation(cube.vertices, cube.transformed_vertices, cube.vert_count, model_view_matrix);
+    apply_transformation(t_vertices, tt_vertices, 3, model_view_matrix);
+    
     clean_zbuffer(z_buffer);
 
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer, 0x000000);
-
-    // draw_wireframe(&cube, color, proj_matrix, frame_buffer);
-
+    
+    fill_triangle(tt_vertices[0], tt_vertices[1], tt_vertices[2], frame_buffer, z_buffer, color1,color2,color3);
     // rotation.x += 1.0;
-    // we need to pass three colors
-    fill_triangle(a, b, c, frame_buffer, z_buffer,color1,color2, color3);
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);
