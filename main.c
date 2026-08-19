@@ -1,5 +1,7 @@
 
 
+
+
 /*    BUG THAT WAS IN THE STREAM      */
 // in the previous stream there was a 2 to 3 bug
 // one was incorrect rgb values in fill_triangle
@@ -16,7 +18,9 @@
 
 #include "sdl_init.h"
 
+
 int main()
 {
+  // we should check our function we will do this is next stream
   create_sdl_window();
 }

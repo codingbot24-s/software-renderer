@@ -1,9 +1,14 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef struct texture {
   int width;
   int height;
-  //TODO: store pixel here
+  uint32_t Rmask;
+  uint32_t Gmask;
+  uint32_t Bmask;
+  
 } texture;
 
 
