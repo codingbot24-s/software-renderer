@@ -20,7 +20,7 @@ add_executable(c main.c
         mesh.h
         mesh.c
         texture.h
-        textue.c
+        texture.c
 )
 
 target_link_libraries(c PRIVATE

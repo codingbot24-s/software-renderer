@@ -6,7 +6,9 @@
 // 2 was the points that we were given from scratch pixel
 // that was already in screen space thats why our pipeline
 // wasnt correctly working on that
-// 3 we need to do project to screen in triangle if we are not using wireframe function because the nexts step requires point in the screen space for working 
+// 3 we need to do project to screen in triangle if we are not using wireframe function because the nexts step requires point in the screen space for working
+
+
 /*
   TODO:Implement a texture system 
   that can load an image into CPU memory and sample a texel using UV coordinates.
