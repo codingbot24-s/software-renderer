@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.1)
-project(c C)
+project(srenderer C)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -18,7 +18,10 @@ add_executable(c main.c
         mat.h
         constant.h
         mesh.h
-        mesh.c)
+        mesh.c
+        texture.h
+        textue.c
+)
 
 target_link_libraries(c PRIVATE
         SDL3::SDL3
