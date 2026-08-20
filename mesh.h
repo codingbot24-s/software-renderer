@@ -9,18 +9,17 @@
 
 #define triangle_size 3
 
-
 typedef struct triangle {
-  int vertices[3];  
+  int vertices[3];
 } triangle;
 
 typedef struct mesh {
-  vec3* vertices;
-  vec3* transformed_vertices;
-  triangle* triangles;
+  vec3 *vertices;
+  vec3 *transformed_vertices;
+  triangle *triangles;
   int triangle_count;
-  int   vert_count;
-} mesh; 
+  int vert_count;
+} mesh;
 
 mesh make_cube();
-#endif //C_MESH_H
+#endif // C_MESH_H

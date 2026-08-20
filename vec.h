@@ -1,7 +1,11 @@
 #pragma once
 
-typedef struct vec3
-{
+typedef struct vec2 {
+  float x;
+  float y;
+} vec2;
+
+typedef struct vec3 {
   float x;
   float y;
   float z;
@@ -13,8 +17,7 @@ vec3 v3_normalize(vec3 v);
 vec3 v3_cross(vec3 a, vec3 b);
 float v3_dot(vec3 a, vec3 b);
 
-typedef struct vec4
-{
+typedef struct vec4 {
   float x;
   float y;
   float z;
