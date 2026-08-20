@@ -1,14 +1,12 @@
 #pragma once
 
+#include <SDL3/SDL_pixels.h>
 #include <stdint.h>
 
 typedef struct texture {
   int width;
   int height;
-  uint32_t Rmask;
-  uint32_t Gmask;
-  uint32_t Bmask;
-  
+  SDL_Color* pixels;
 } texture;
 
 

@@ -5,9 +5,10 @@ set(CMAKE_C_STANDARD 11)
 
 # Find the SDL3 package
 find_package(SDL3 REQUIRED)
+find_package(SDL3_image REQUIRED)
 
-
-add_executable(c main.c
+add_executable(c
+        main.c
         sdl_init.h
         sdl_init.c
         draw.h
@@ -26,4 +27,5 @@ add_executable(c main.c
 target_link_libraries(c PRIVATE
         SDL3::SDL3
         m
+        SDL3_image::SDL3_image
 )
