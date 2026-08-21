@@ -7,18 +7,25 @@
 
 #include "vec.h"
 
-#define triangle_size 3
+/// face of triangle
+typedef struct face_t {
+  int vertex_idices[3];
+  int uvs_indices [3];
+} face_t;
 
-typedef struct triangle {
-  int vertices[3];
-} triangle;
 
 typedef struct mesh {
+  /// vertices of this mesh 
   vec3 *vertices;
-  vec3 *transformed_vertices;
-  triangle *triangles;
-  int triangle_count;
+  /// uvs of the meshes
+  vec2* uvs;
+  /// face_t of this mesh
+  face_t* faces;    
+  /// vert count
   int vert_count;
+  /// uvs count
+  int uvs_count;
+  int num_face_t;
 } mesh;
 
 mesh make_cube();

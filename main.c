@@ -16,11 +16,14 @@
   and verify that both behaviors work correctly when UV coordinates extend
   outside the [0, 1] range.
 */
+
+
 #include "sdl_init.h"
 #include "texture.h"
 
 int main() {
   texture texture = load_texture_from_file(
       "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+
   create_sdl_window();
 }

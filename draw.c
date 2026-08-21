@@ -237,3 +237,5 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
 // NOTE: textured triangle function would be same as fill
 // triangle but in that function we need to interpolate the texel
 // color with point weights and vertices uvs
+
+void draw_textured_triangle() {}
