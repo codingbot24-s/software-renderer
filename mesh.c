@@ -1,4 +1,5 @@
 //
+// 1. if all the weights are positive
 // Created by saad on 8/10/26.
 //
 
@@ -6,25 +7,23 @@
 #include "vec.h"
 #include <stdlib.h>
 
+// there is a double malloc we dont need this
+// how can we get rid of double mallocs we can remove malloc from that
+// main function and stack allocate all the vertices and uvs for now
+mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
+                face_t *triangles, int face_t_count) {
 
-
-
-mesh* make_mesh(vec3* vertices,int vert_count,
-               vec2* uvs, int uvs_count,
-               face_t* triangles, int face_t_count
-               ) {
-          
-  mesh* mesh = malloc(sizeof(mesh));
+  mesh *mesh = malloc(sizeof(mesh));
   mesh->vertices = malloc(vert_count * sizeof(vec3));
   mesh->uvs = malloc(uvs_count * sizeof(vec2));
   mesh->faces = malloc(face_t_count * sizeof(face_t));
 
   for (int i = 0; i < vert_count; ++i) {
-    mesh->vertices[i] = vertices[i]; 
+    mesh->vertices[i] = vertices[i];
   }
 
   for (int i = 0; i < uvs_count; ++i) {
-    mesh->uvs[i] = uvs[i]; 
+    mesh->uvs[i] = uvs[i];
   }
 
   for (int i = 0; i < face_t_count; ++i) {
@@ -34,8 +33,4 @@ mesh* make_mesh(vec3* vertices,int vert_count,
   return mesh;
 }
 
-
-
-void free_mesh(mesh* mesh) {
-  
-}
+void free_mesh(mesh *mesh) {}

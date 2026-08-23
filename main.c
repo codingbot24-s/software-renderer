@@ -1,5 +1,4 @@
 
-
 /*
   TODO1:Implement a texture system
   that can load an image into CPU memory and sample a texel using UV
@@ -17,13 +16,11 @@
   outside the [0, 1] range.
 */
 
-
 #include "sdl_init.h"
 #include "texture.h"
 
 int main() {
-  texture texture = load_texture_from_file(
-      "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+  // Projects dir in void
 
   create_sdl_window();
 }

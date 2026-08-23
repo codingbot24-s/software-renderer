@@ -1,9 +1,10 @@
 // Created by saad on 8/4/26.
 //
 
-#include "draw.h"
 #include "constant.h"
+#include "draw.h"
 #include "mesh.h"
+#include "texture.h"
 #include "vec.h"
 #include <math.h>
 #include <stdbool.h>
@@ -100,11 +101,10 @@ void swap(float *a, float *b) {
 
 void draw_wireframe(mesh *mesh, uint32_t color, matrix proj_matrix,
                     uint32_t *framebuffer) {
-  for (int i = 0; i < mesh->triangle_count; ++i) {
-
-    vec3 v1 = mesh->transformed_vertices[mesh->triangles[i].vertices[0]];
-    vec3 v2 = mesh->transformed_vertices[mesh->triangles[i].vertices[1]];
-    vec3 v3 = mesh->transformed_vertices[mesh->triangles[i].vertices[2]];
+  for (int i = 0; i < mesh->num_face_t; ++i) {
+    vec3 v1 = mesh->vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->vertices[mesh->faces[i].vertex_indices[2]];
 
     vec3 p1 = project_to_screen(v1, proj_matrix);
     vec3 p2 = project_to_screen(v2, proj_matrix);
@@ -237,5 +237,55 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
 // NOTE: textured triangle function would be same as fill
 // triangle but in that function we need to interpolate the texel
 // color with point weights and vertices uvs
+// TODO: we need to find the vertex structer that store the
+// uv cordinate for interpolating the uv cordinate for the
+// pixel in the loop
+void draw_textured_triangle(vec3 p1, vec3 p2, vec3 p3, vec2 uv1, vec2 uv2,
+                            vec2 uv3, texture *texture, uint32_t *framebuffer) {
+  // 1 .  compute the bounding box of triangle
+  int minx = fminf(p1.x, fminf(p1.x, p1.x));
+  int miny = fminf(p1.y, fminf(p1.y, p1.y));
+  int maxx = fmaxf(p1.x, fmaxf(p2.x, p3.x));
+  int maxy = fmaxf(p1.y, fmaxf(p2.y, p3.y));
 
-void draw_textured_triangle() {}
+  // 2 . clip the bounding box against the framebuffer
+  if (minx < 0) {
+    minx = 0;
+  }
+  if (miny < 0) {
+    miny = 0;
+  }
+  if (maxx > WIDTH) {
+    maxx = WIDTH - 1;
+  }
+  if (maxy > HIEGHT) {
+    maxy = HIEGHT - 1;
+  }
+  // 3. compute the area of triangle
+  float area = edge_function(p1, p2, p3);
+  // 4. compute the weights of every pixel
+  for (int i = minx; i < maxx; ++i) {
+    for (int j = miny; j < maxy; ++j) {
+
+      vec3 point = (vec3){j + 0.5, i + 0.5, 0.0};
+      float w0 = edge_function(p1, p2, point) / area;
+      float w1 = edge_function(p2, p3, point) / area;
+      float w2 = edge_function(p3, p1, point) / area;
+
+      if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
+        // 2. interpolate the uv cordinate
+        float u = w0 * uv1.x + w1 * uv2.x + w2 * uv3.x;
+        float v = w0 * uv1.y + w1 * uv2.y + w2 * uv3.y;
+        // actual texture x y
+        int texx = (int)(u * texture->width - 1);
+        int texy = (int)(v * texture->height - 1);
+
+        SDL_Color texel = texture->pixels[texy * texture->width + texx];
+
+        uint32_t color = ((uint32_t)texel.r << 16) | ((uint32_t)texel.g << 8) |
+                         ((uint32_t)texel.b);
+        put_pixel(framebuffer, texx, texy, color);
+      }
+    }
+  }
+}
