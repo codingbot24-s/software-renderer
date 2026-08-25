@@ -30,6 +30,10 @@ mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
     mesh->faces[i] = triangles[i];
   }
 
+  mesh->num_face_t = face_t_count;
+  mesh->uvs_count = uvs_count;
+  mesh->vert_count = vert_count;
+
   return mesh;
 }
 

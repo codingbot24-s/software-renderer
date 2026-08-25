@@ -41,12 +41,12 @@ texture load_texture_from_file(char *filename) {
   return texture;
 }
 
-SDL_Color sample_texel(texture texture, vec2 uv_cor) {
+SDL_Color sample_texel(texture *texture, vec2 uv_cor) {
   float u = uv_cor.x - (float)floorf(uv_cor.x);
   float v = uv_cor.y - (float)floorf(uv_cor.y);
 
-  int x = (int)((texture.width - 1) * u);
-  int y = (int)((texture.height - 1) * v);
+  int x = (int)((texture->width - 1) * u);
+  int y = (int)((texture->height - 1) * v);
 
-  return texture.pixels[y * texture.width + x];
+  return texture->pixels[y * texture->width + x];
 }

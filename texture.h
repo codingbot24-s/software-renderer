@@ -11,4 +11,4 @@ typedef struct texture {
 } texture;
 
 texture load_texture_from_file(char *filename);
-SDL_Color sample_texel(texture texture, vec2 uv_cor);
+SDL_Color sample_texel(texture *texture, vec2 uv_cor);

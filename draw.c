@@ -1,8 +1,8 @@
 // Created by saad on 8/4/26.
 //
 
-#include "constant.h"
 #include "draw.h"
+#include "constant.h"
 #include "mesh.h"
 #include "texture.h"
 #include "vec.h"
@@ -212,7 +212,6 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
         float v3_cg = c2g * c.z;
         float v3_cb = c2b * c.z;
 
-        // if not work we need to check this values
         float r_over_piverse = w0 * v1_cr + w1 * v2_cr + w2 * v3_cr;
         float g_over_piverse = w0 * v1_cg + w1 * v2_cg + w2 * v3_cg;
         float b_over_piverse = w0 * v1_cb + w1 * v2_cb + w2 * v3_cb;
@@ -234,57 +233,65 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
   }
 }
 
-// NOTE: textured triangle function would be same as fill
-// triangle but in that function we need to interpolate the texel
-// color with point weights and vertices uvs
-// TODO: we need to find the vertex structer that store the
-// uv cordinate for interpolating the uv cordinate for the
-// pixel in the loop
-void draw_textured_triangle(vec3 p1, vec3 p2, vec3 p3, vec2 uv1, vec2 uv2,
-                            vec2 uv3, texture *texture, uint32_t *framebuffer) {
-  // 1 .  compute the bounding box of triangle
-  int minx = fminf(p1.x, fminf(p1.x, p1.x));
-  int miny = fminf(p1.y, fminf(p1.y, p1.y));
-  int maxx = fmaxf(p1.x, fmaxf(p2.x, p3.x));
-  int maxy = fmaxf(p1.y, fmaxf(p2.y, p3.y));
+// TODO: now we need to implement the textured cube
 
-  // 2 . clip the bounding box against the framebuffer
-  if (minx < 0) {
-    minx = 0;
-  }
-  if (miny < 0) {
-    miny = 0;
-  }
-  if (maxx > WIDTH) {
-    maxx = WIDTH - 1;
-  }
-  if (maxy > HIEGHT) {
-    maxy = HIEGHT - 1;
-  }
-  // 3. compute the area of triangle
-  float area = edge_function(p1, p2, p3);
-  // 4. compute the weights of every pixel
-  for (int i = minx; i < maxx; ++i) {
-    for (int j = miny; j < maxy; ++j) {
+void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
+                   uint32_t *framebuffer) {
 
-      vec3 point = (vec3){j + 0.5, i + 0.5, 0.0};
-      float w0 = edge_function(p1, p2, point) / area;
-      float w1 = edge_function(p2, p3, point) / area;
-      float w2 = edge_function(p3, p1, point) / area;
+  for (int i = 0; i < mesh->num_face_t; ++i) {
+    vec3 v1 = mesh->vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->vertices[mesh->faces[i].vertex_indices[2]];
 
-      if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
-        // 2. interpolate the uv cordinate
-        float u = w0 * uv1.x + w1 * uv2.x + w2 * uv3.x;
-        float v = w0 * uv1.y + w1 * uv2.y + w2 * uv3.y;
-        // actual texture x y
-        int texx = (int)(u * texture->width - 1);
-        int texy = (int)(v * texture->height - 1);
+    vec2 uv1 = mesh->uvs[mesh->faces[i].uvs_indices[0]];
+    vec2 uv2 = mesh->uvs[mesh->faces[i].uvs_indices[1]];
+    vec2 uv3 = mesh->uvs[mesh->faces[i].uvs_indices[2]];
 
-        SDL_Color texel = texture->pixels[texy * texture->width + texx];
+    vec3 p1 = project_to_screen(v1, proj_matrix);
+    vec3 p2 = project_to_screen(v2, proj_matrix);
+    vec3 p3 = project_to_screen(v3, proj_matrix);
 
-        uint32_t color = ((uint32_t)texel.r << 16) | ((uint32_t)texel.g << 8) |
-                         ((uint32_t)texel.b);
-        put_pixel(framebuffer, texx, texy, color);
+    int minx = fminf(p1.x, fminf(p2.x, p3.x));
+    int maxx = fmaxf(p1.x, fmaxf(p2.x, p3.x));
+    int miny = fminf(p1.y, fminf(p2.y, p3.y));
+    int maxy = fmaxf(p1.y, fmaxf(p2.y, p3.y));
+
+    float area = edge_function(p1, p2, p3);
+
+    for (int x = minx; x < maxx; ++x) {
+      for (int y = miny; y < maxy; ++y) {
+        vec3 point = (vec3){x + 0.5, y + 0.5, 0};
+
+        float w0 = edge_function(p1, p2, point) / area;
+        float w1 = edge_function(p2, p3, point) / area;
+        float w2 = edge_function(p3, p1, point) / area;
+
+        if ((w0 >= 0 && w1 >= 0 && w2 >= 0) ||
+            (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
+
+          float pixelinw = w0 * p1.z + w1 * p2.z + w2 * p2.z;
+
+          float uow_p1 = uv1.x * p1.z;
+          float vow_p1 = uv1.y * p1.z;
+
+          float uow_p2 = uv2.x * p2.z;
+          float vow_p2 = uv2.y * p2.z;
+
+          float uow_p3 = uv3.x * p3.z;
+          float vow_p3 = uv3.y * p3.z;
+
+          float uow_p = w0 * uow_p1 + w1 * uow_p2 + w2 * uow_p3;
+          float vow_p = w0 * vow_p1 + w1 * vow_p2 + w2 * vow_p3;
+
+          float uc = uow_p / pixelinw;
+          float vc = vow_p / pixelinw;
+
+          SDL_Color texel = sample_texel(texture, (vec2){uc, vc});
+          uint32_t color = ((uint32_t)texel.r << 16 | (uint32_t)texel.g << 8 |
+                            (uint32_t)texel.b);
+
+          put_pixel(framebuffer, point.x, point.y, color);
+        }
       }
     }
   }
