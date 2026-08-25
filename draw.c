@@ -239,9 +239,9 @@ void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
                    uint32_t *framebuffer) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
-    vec3 v1 = mesh->vertices[mesh->faces[i].vertex_indices[0]];
-    vec3 v2 = mesh->vertices[mesh->faces[i].vertex_indices[1]];
-    vec3 v3 = mesh->vertices[mesh->faces[i].vertex_indices[2]];
+    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
 
     vec2 uv1 = mesh->uvs[mesh->faces[i].uvs_indices[0]];
     vec2 uv2 = mesh->uvs[mesh->faces[i].uvs_indices[1]];

@@ -15,6 +15,7 @@ mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
 
   mesh *mesh = malloc(sizeof(mesh));
   mesh->vertices = malloc(vert_count * sizeof(vec3));
+  mesh->transformend_vertices = malloc(vert_count * sizeof(vec3));
   mesh->uvs = malloc(uvs_count * sizeof(vec2));
   mesh->faces = malloc(face_t_count * sizeof(face_t));
 

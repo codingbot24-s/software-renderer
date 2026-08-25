@@ -16,6 +16,7 @@ typedef struct face_t {
 typedef struct mesh {
   /// vertices of this mesh
   vec3 *vertices;
+  vec3 *transformend_vertices;
   /// uvs of the meshes
   vec2 *uvs;
   /// face_t of this mesh

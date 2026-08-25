@@ -16,8 +16,7 @@
 #include <stdlib.h>
 
 void clean_zbuffer(float *z_buffer);
-void apply_transformation(vec3 *original_vert, int original_vert_count,
-                          matrix view_matrix);
+void apply_transformation(mesh *mesh, matrix view_matrix);
 
 static bool running = true;
 
@@ -178,7 +177,7 @@ int create_sdl_window() {
     matrix model_view_matrix = mat_mul_mat(view_matrix, model_matrix);
 
     // BUG: after uncommenting this line trinagle behave differently
-    apply_transformation(mesh->vertices, mesh->vert_count, model_view_matrix);
+    apply_transformation(mesh, model_view_matrix);
 
     clean_zbuffer(z_buffer);
 
@@ -186,7 +185,7 @@ int create_sdl_window() {
     clear_framebuffer(frame_buffer, 0x000000);
 
     draw_textured(mesh, proj_matrix, &loaded_texture, frame_buffer);
-    // rotation.x += 1.0;
+    rotation.x += 1.0;
 
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
@@ -207,11 +206,14 @@ void clean_zbuffer(float *z_buffer) {
   }
 }
 
-void apply_transformation(vec3 *original_vert, int original_vert_count,
-                          matrix view_matrix) {
+void apply_transformation(mesh *mesh, matrix view_matrix) {
   // NOTE: we changed from tt_vert to original vert
   //  check this works
-  for (int i = 0; i < original_vert_count; ++i) {
-    original_vert[i] = matrix_mul_vec3(view_matrix, original_vert[i]);
+
+  // try changing this thing or search in other renderes how points been
+  // transformed in camera space
+  for (int i = 0; i < mesh->vert_count; ++i) {
+    mesh->transformend_vertices[i] =
+        matrix_mul_vec3(view_matrix, mesh->vertices[i]);
   }
 }
