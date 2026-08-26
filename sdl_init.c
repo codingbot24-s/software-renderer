@@ -184,9 +184,10 @@ int create_sdl_window() {
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer, 0x000000);
 
-    draw_textured(mesh, proj_matrix, &loaded_texture, frame_buffer);
-    // rotation.x += 1.0;
-    //  draw_fill(mesh, proj_matrix, frame_buffer, color1, color2, color3);
+    draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer, frame_buffer);
+    rotation.z += 1.0;
+    //  draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
+    //            color3);
 
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);

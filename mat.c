@@ -1,23 +1,20 @@
 
 
 #include "mat.h"
+#include "constant.h"
 #include "vec.h"
 #include <math.h>
-#include "constant.h"
 
-matrix make_translation_matrix(float tx, float ty, float tz)
-{
-  return (matrix){
-      .mat = {
-          {1.0, 0.0, 0.0, tx},
-          {0.0, 1.0, 0.0, ty},
-          {0.0, 0.0, 1.0, tz},
-          {0.0, 0.0, 0.0, 1},
-      }};
+matrix make_translation_matrix(float tx, float ty, float tz) {
+  return (matrix){.mat = {
+                      {1.0, 0.0, 0.0, tx},
+                      {0.0, 1.0, 0.0, ty},
+                      {0.0, 0.0, 1.0, tz},
+                      {0.0, 0.0, 0.0, 1},
+                  }};
 }
 
-matrix make_rotation_matrix(float pitch, float yaw, float roll)
-{
+matrix make_rotation_matrix(float pitch, float yaw, float roll) {
 
   float alpha = yaw * DAG_TO_RADIANS;
   float beta = pitch * DAG_TO_RADIANS;
@@ -41,98 +38,94 @@ matrix make_rotation_matrix(float pitch, float yaw, float roll)
       }};
 }
 
-matrix make_scaling_matrix(float sx, float sy, float sz)
-{
-  return (matrix){
-      .mat = {
-          {sx, 0.0, 0.0, 0.0},
-          {0.0, sy, 0.0, 0.0},
-          {0.0, 0.0, sz, 0.0},
-          {0.0, 0.0, 0.0, 1.0}}};
+matrix make_scaling_matrix(float sx, float sy, float sz) {
+  return (matrix){.mat = {{sx, 0.0, 0.0, 0.0},
+                          {0.0, sy, 0.0, 0.0},
+                          {0.0, 0.0, sz, 0.0},
+                          {0.0, 0.0, 0.0, 1.0}}};
 }
 
-vec4 matrix_mul_vec4(matrix matrix, vec4 vec)
-{
+vec4 matrix_mul_vec4(matrix matrix, vec4 vec) {
   vec4 res;
-  res.x = matrix.mat[0][0] * vec.x + matrix.mat[0][1] * vec.y + matrix.mat[0][2] * vec.z + matrix.mat[0][3] * vec.w;
-  res.y = matrix.mat[1][0] * vec.x + matrix.mat[1][1] * vec.y + matrix.mat[1][2] * vec.z + matrix.mat[1][3] * vec.w;
-  res.z = matrix.mat[2][0] * vec.x + matrix.mat[2][1] * vec.y + matrix.mat[2][2] * vec.z + matrix.mat[2][3] * vec.w;
-  res.w = matrix.mat[3][0] * vec.x + matrix.mat[3][1] * vec.y + matrix.mat[3][2] * vec.z + matrix.mat[3][3] * vec.w;
+  res.x = matrix.mat[0][0] * vec.x + matrix.mat[0][1] * vec.y +
+          matrix.mat[0][2] * vec.z + matrix.mat[0][3] * vec.w;
+  res.y = matrix.mat[1][0] * vec.x + matrix.mat[1][1] * vec.y +
+          matrix.mat[1][2] * vec.z + matrix.mat[1][3] * vec.w;
+  res.z = matrix.mat[2][0] * vec.x + matrix.mat[2][1] * vec.y +
+          matrix.mat[2][2] * vec.z + matrix.mat[2][3] * vec.w;
+  res.w = matrix.mat[3][0] * vec.x + matrix.mat[3][1] * vec.y +
+          matrix.mat[3][2] * vec.z + matrix.mat[3][3] * vec.w;
 
   return res;
 }
 
-vec3 matrix_mul_vec3(matrix matrix, vec3 vec)
-{
+vec3 matrix_mul_vec3(matrix matrix, vec3 vec) {
   vec3 res;
-  res.x = matrix.mat[0][0] * vec.x + matrix.mat[0][1] * vec.y + matrix.mat[0][2] * vec.z + matrix.mat[0][3];
-  res.y = matrix.mat[1][0] * vec.x + matrix.mat[1][1] * vec.y + matrix.mat[1][2] * vec.z + matrix.mat[1][3];
-  res.z = matrix.mat[2][0] * vec.x + matrix.mat[2][1] * vec.y + matrix.mat[2][2] * vec.z + matrix.mat[2][3];
+  res.x = matrix.mat[0][0] * vec.x + matrix.mat[0][1] * vec.y +
+          matrix.mat[0][2] * vec.z + matrix.mat[0][3];
+  res.y = matrix.mat[1][0] * vec.x + matrix.mat[1][1] * vec.y +
+          matrix.mat[1][2] * vec.z + matrix.mat[1][3];
+  res.z = matrix.mat[2][0] * vec.x + matrix.mat[2][1] * vec.y +
+          matrix.mat[2][2] * vec.z + matrix.mat[2][3];
   return res;
 }
 
-matrix mat_mul_mat(matrix a, matrix b)
-{
+matrix mat_mul_mat(matrix a, matrix b) {
   matrix result;
-  for (int i = 0; i < 4; ++i)
-  {
-    for (int j = 0; j < 4; ++j)
-    {
-      result.mat[i][j] = a.mat[i][0] * b.mat[0][j] +
-                         a.mat[i][1] * b.mat[1][j] +
-                         a.mat[i][2] * b.mat[2][j] +
-                         a.mat[i][3] * b.mat[3][j];
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      result.mat[i][j] = a.mat[i][0] * b.mat[0][j] + a.mat[i][1] * b.mat[1][j] +
+                         a.mat[i][2] * b.mat[2][j] + a.mat[i][3] * b.mat[3][j];
     }
   }
 
   return result;
 }
 
-matrix make_view_matrix(vec3 eye, vec3 target)
-{
+matrix make_view_matrix(vec3 eye, vec3 target) {
   vec3 forward = v3_normalize(v3_sub(eye, target));
   vec3 right = v3_cross((vec3){0.0, 1.0, 0.0}, forward);
   vec3 up = v3_cross(forward, right);
 
   return (matrix){
-      .mat = {
-          {right.x, right.y, right.z, -v3_dot(right, eye)},
-          {up.x, up.y, up.z, -v3_dot(up, eye)},
-          {forward.x, forward.y, forward.z, -v3_dot(forward, eye)},
-          {0.0, 0.0, 0.0, 1.0}}};
+      .mat = {{right.x, right.y, right.z, -v3_dot(right, eye)},
+              {up.x, up.y, up.z, -v3_dot(up, eye)},
+              {forward.x, forward.y, forward.z, -v3_dot(forward, eye)},
+              {0.0, 0.0, 0.0, 1.0}}};
 }
 
-matrix make_projection_matrix(int screen_width, int screen_height,
-                              float fov, float far, float near)
-{
+matrix make_projection_matrix(int screen_width, int screen_height, float fov,
+                              float far, float near) {
   float f = 1.0f / tanf(fov * 0.5f * DAG_TO_RADIANS);
   float aspect = (float)screen_width / (float)screen_height;
 
-  return (matrix){
-      .mat = {
-          {f / aspect, 0.0, 0.0, 0.0},
-          {0.0, f, 0.0, 0.0},
-          {0.0, 0.0, -far / (far - near), -1.0},
-          {0.0, 0.0, -far * near / (far - near), 0.0},
-      }};
+  return (matrix){.mat = {
+                      {f / aspect, 0.0, 0.0, 0.0},
+                      {0.0, f, 0.0, 0.0},
+                      {0.0, 0.0, -far / (far - near), -1.0},
+                      {0.0, 0.0, -far * near / (far - near), 0.0},
+                  }};
 }
 
 // point is view space point
-vec3 project_to_screen(vec3 point, matrix proj_matrix)
-{
-  vec4 clip_sp_points = matrix_mul_vec4(proj_matrix, (vec4){point.x, point.y, point.z, 1.0});
+screen_space_vertex project_to_screen(vec3 point, matrix proj_matrix) {
+  vec4 clip_sp_points =
+      matrix_mul_vec4(proj_matrix, (vec4){point.x, point.y, point.z, 1.0});
   float inw = 1.0 / clip_sp_points.w;
-  
-  // add ndcz  
+
+  // add ndcz
   float ndcx = clip_sp_points.x * inw;
   float ndcy = clip_sp_points.y * inw;
-    
+  float ndcz = clip_sp_points.z * inw;
+
   float screen_x = (ndcx * 0.5 + 0.5) * WIDTH;
   float screen_y = (-ndcy * 0.5 + 0.5) * HIEGHT;
 
-  return (vec3){
-      .x = screen_x,
-      .y = screen_y,
-      .z = inw,
+  // from now it will retunrn the screenspace cordinate with
+  // z and w
+  return (screen_space_vertex){
+      .vertex = (vec3){.x = screen_x, .y = screen_y, .z = ndcz},
+      .inw = inw,
+
   };
 }

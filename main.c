@@ -6,7 +6,7 @@
 
   TODO2:Assign UV coordinates
   to your triangle's vertices and render a textured triangle using your
-texture sampler.
+  texture sampler.
 
   TODO3 :Apply texture mapping to your rotating 3D cube,
   with each cube face displaying the appropriate region of the texture.
