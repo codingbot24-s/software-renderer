@@ -2,6 +2,7 @@
 #include "texture.h"
 #include "vec.h"
 #include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
 #include <math.h>
@@ -18,24 +19,32 @@ texture load_texture_from_file(char *filename) {
     return texture;
   }
 
-  texture.width = surface->w;
-  texture.height = surface->h;
-  texture.pixels = malloc(texture.width * texture.height * sizeof(SDL_Color));
-
   SDL_Surface *rgba = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+
   if (!rgba) {
-    fprintf(stderr, "Cant convert to format \n");
+    fprintf(stderr, "Cant convert to format: %s\n", SDL_GetError());
+    SDL_DestroySurface(surface);
     return texture;
   }
 
-  uint32_t *raw_pixels = (uint32_t *)rgba->pixels;
+  texture.width = rgba->w;
+  texture.height = rgba->h;
 
-  int pixel_count = texture.height * texture.width;
-  for (int i = 0; i < pixel_count; ++i) {
-    texture.pixels[i].r = ((uint32_t)raw_pixels[i] >> 24) & 0xFF;
-    texture.pixels[i].g = ((uint32_t)raw_pixels[i] >> 16) & 0xFF;
-    texture.pixels[i].b = ((uint32_t)raw_pixels[i] >> 8) & 0xFF;
-    texture.pixels[i].a = raw_pixels[i] & 0xFF;
+  texture.pixels = malloc(texture.width * texture.height * sizeof(SDL_Color));
+  for (int y = 0; y < texture.height; ++y) {
+    // get the row
+    // pitch is row in bytes
+    // rgba pixels is first byte image
+    uint8_t *row = (uint8_t *)rgba->pixels + y * rgba->pitch;
+    for (int x = 0; x < texture.width; ++x) {
+      // pixel is 4 byte so x * 4 equal to first pixel
+      uint8_t *pixel = row + x * 4;
+
+      texture.pixels[y * texture.width + x].r = pixel[0];
+      texture.pixels[y * texture.width + x].g = pixel[1];
+      texture.pixels[y * texture.width + x].b = pixel[2];
+      texture.pixels[y * texture.width + x].a = pixel[3];
+    }
   }
   SDL_DestroySurface(surface);
   return texture;

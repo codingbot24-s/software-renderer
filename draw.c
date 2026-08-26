@@ -262,14 +262,14 @@ void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
       for (int y = miny; y < maxy; ++y) {
         vec3 point = (vec3){x + 0.5, y + 0.5, 0};
 
-        float w0 = edge_function(p1, p2, point) / area;
-        float w1 = edge_function(p2, p3, point) / area;
-        float w2 = edge_function(p3, p1, point) / area;
+        float w0 = edge_function(p2, p3, point) / area;
+        float w1 = edge_function(p3, p1, point) / area;
+        float w2 = edge_function(p1, p2, point) / area;
 
         if ((w0 >= 0 && w1 >= 0 && w2 >= 0) ||
             (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
 
-          float pixelinw = w0 * p1.z + w1 * p2.z + w2 * p2.z;
+          float pixelinw = w0 * p1.z + w1 * p2.z + w2 * p3.z;
 
           float uow_p1 = uv1.x * p1.z;
           float vow_p1 = uv1.y * p1.z;
@@ -289,6 +289,81 @@ void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
           SDL_Color texel = sample_texel(texture, (vec2){uc, vc});
           uint32_t color = ((uint32_t)texel.r << 16 | (uint32_t)texel.g << 8 |
                             (uint32_t)texel.b);
+
+          put_pixel(framebuffer, point.x, point.y, color);
+        }
+      }
+    }
+  }
+}
+
+void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
+               uint32_t color1, uint32_t color2, uint32_t color3) {
+
+  for (int i = 0; i < mesh->num_face_t; ++i) {
+    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+
+    vec3 p1 = project_to_screen(v1, proj_matrix);
+    vec3 p2 = project_to_screen(v2, proj_matrix);
+    vec3 p3 = project_to_screen(v3, proj_matrix);
+
+    int minx = fminf(p1.x, fminf(p2.x, p3.x));
+    int maxx = fmaxf(p1.x, fmaxf(p2.x, p3.x));
+    int miny = fminf(p1.y, fminf(p2.y, p3.y));
+    int maxy = fmaxf(p1.y, fmaxf(p2.y, p3.y));
+
+    float area = edge_function(p1, p2, p3);
+
+    for (int x = minx; x < maxx; ++x) {
+      for (int y = miny; y < maxy; ++y) {
+        vec3 point = (vec3){x + 0.5, y + 0.5, 0};
+
+        float w0 = edge_function(p2, p3, point) / area;
+        float w1 = edge_function(p3, p1, point) / area;
+        float w2 = edge_function(p1, p2, point) / area;
+
+        float c0r = (color1 >> 16) & 0xFF;
+        float c0g = (color1 >> 8) & 0xFF;
+        float c0b = (color1) & 0xFF;
+
+        float c1r = (color2 >> 16) & 0xFF;
+        float c1g = (color2 >> 8) & 0xFF;
+        float c1b = (color2) & 0xFF;
+
+        float c2r = (color3 >> 16) & 0xFF;
+        float c2g = (color3 >> 8) & 0xFF;
+        float c2b = (color3) & 0xFF;
+
+        if ((w0 >= 0 && w1 >= 0 && w2 >= 0) ||
+            (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
+
+          float pixel_inw = w0 * p1.z + w1 * p2.z + w2 * p3.z;
+
+          // vertex inverse colors
+          float v1_cr = c0r * p1.z;
+          float v1_cg = c0g * p1.z;
+          float v1_cb = c0b * p1.z;
+
+          float v2_cr = c1r * p2.z;
+          float v2_cg = c1g * p2.z;
+          float v2_cb = c1b * p2.z;
+
+          float v3_cr = c2r * p3.z;
+          float v3_cg = c2g * p3.z;
+          float v3_cb = c2b * p3.z;
+
+          float r_over_piverse = w0 * v1_cr + w1 * v2_cr + w2 * v3_cr;
+          float g_over_piverse = w0 * v1_cg + w1 * v2_cg + w2 * v3_cg;
+          float b_over_piverse = w0 * v1_cb + w1 * v2_cb + w2 * v3_cb;
+
+          float red = r_over_piverse / pixel_inw;
+          float green = g_over_piverse / pixel_inw;
+          float blue = b_over_piverse / pixel_inw;
+
+          uint32_t color =
+              ((uint32_t)red << 16) | ((uint32_t)green << 8) | ((uint32_t)blue);
 
           put_pixel(framebuffer, point.x, point.y, color);
         }

@@ -30,4 +30,6 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
 void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
                    uint32_t *framebuffer);
 
+void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
+               uint32_t color1, uint32_t color2, uint32_t color3);
 #endif // C_DRAW_H

@@ -55,9 +55,9 @@ int create_sdl_window() {
   matrix proj_matrix =
       make_projection_matrix(WIDTH, HIEGHT, FOV, FAR_PLANE, NEAR_PLANE);
   // triangle vertices
-  uint32_t color1 = 0xFF0000;
-  uint32_t color2 = 0x00FF00;
-  uint32_t color3 = 0x0000FF;
+  uint32_t color1 = 0xFFFFFF;
+  uint32_t color2 = 0xFFFFFF;
+  uint32_t color3 = 0xFFFFFF;
   // TODO: remove all mallocs from here there should be no malloc in this means
   // whole lifetime
 
@@ -104,7 +104,7 @@ int create_sdl_window() {
   };
 
   triangles_indices[2] = (face_t){
-      .vertex_indices = {2, 3, 4},
+      .vertex_indices = {3, 2, 4},
       .uvs_indices = {0, 1, 2},
   };
 
@@ -120,7 +120,7 @@ int create_sdl_window() {
 
   triangles_indices[5] = (face_t){
       .vertex_indices = {5, 6, 7},
-      .uvs_indices = {0, 1, 2},
+      .uvs_indices = {0, 2, 3},
   };
 
   triangles_indices[6] = (face_t){
@@ -185,7 +185,8 @@ int create_sdl_window() {
     clear_framebuffer(frame_buffer, 0x000000);
 
     draw_textured(mesh, proj_matrix, &loaded_texture, frame_buffer);
-    rotation.x += 1.0;
+    // rotation.x += 1.0;
+    //  draw_fill(mesh, proj_matrix, frame_buffer, color1, color2, color3);
 
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
