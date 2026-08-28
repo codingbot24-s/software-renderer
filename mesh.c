@@ -7,20 +7,24 @@
 #include "vec.h"
 #include <stdlib.h>
 
-// there is a double malloc we dont need this
-// how can we get rid of double mallocs we can remove malloc from that
-// main function and stack allocate all the vertices and uvs for now
 mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
-                face_t *triangles, int face_t_count) {
+                face_t *triangles, int face_t_count, int normals_count,
+                vec3 *normals) {
 
   mesh *mesh = malloc(sizeof(mesh));
   mesh->vertices = malloc(vert_count * sizeof(vec3));
   mesh->transformend_vertices = malloc(vert_count * sizeof(vec3));
+  mesh->normals = malloc(normals_count * sizeof(vec3));
+  mesh->transformed_normals = malloc(normals_count * sizeof(vec3));
   mesh->uvs = malloc(uvs_count * sizeof(vec2));
   mesh->faces = malloc(face_t_count * sizeof(face_t));
 
   for (int i = 0; i < vert_count; ++i) {
     mesh->vertices[i] = vertices[i];
+  }
+
+  for (int i = 0; i < normals_count; ++i) {
+    mesh->normals[i] = normals[i];
   }
 
   for (int i = 0; i < uvs_count; ++i) {
@@ -31,6 +35,7 @@ mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
     mesh->faces[i] = triangles[i];
   }
 
+  mesh->normals_count = normals_count;
   mesh->num_face_t = face_t_count;
   mesh->uvs_count = uvs_count;
   mesh->vert_count = vert_count;

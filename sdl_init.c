@@ -91,68 +91,100 @@ int create_sdl_window() {
   uvs[2] = (vec2){0.0, 0.0};
   uvs[3] = (vec2){0.0, 1.0};
 
+  // normals for our hardcoded cube
+  vec3 *normals = malloc(6 * sizeof(vec3));
+  normals[0] = (vec3){0.0, 0.0, -1.0};
+  normals[1] = (vec3){1.0, 0.0, 0.0};
+  normals[2] = (vec3){0.0, 0.0, 1.0};
+  normals[3] = (vec3){-1.0, 0.0, 0.0};
+  normals[4] = (vec3){0.0, 1.0, 0.0};
+  normals[5] = (vec3){0.0, -1.0, 0.0};
+
   // add indices for cubes
   face_t *triangles_indices = malloc(12 * sizeof(face_t));
-  triangles_indices[0] = (face_t){
-      .vertex_indices = {0, 1, 2},
-      .uvs_indices = {0, 1, 2},
-  };
+  triangles_indices[0] = (face_t){.vertex_indices = {0, 1, 2},
+                                  .uvs_indices = {0, 1, 2},
+                                  .normal_indices = {0, 0, 0}};
 
   triangles_indices[1] = (face_t){
       .vertex_indices = {0, 2, 3},
       .uvs_indices = {0, 2, 3},
+      .normal_indices =
+          {
+              0,
+              0,
+              0,
+          },
+
   };
 
   triangles_indices[2] = (face_t){
       .vertex_indices = {3, 2, 4},
       .uvs_indices = {0, 1, 2},
+      .normal_indices =
+          {
+              1,
+              1,
+              1,
+          },
   };
 
-  triangles_indices[3] = (face_t){
-      .vertex_indices = {3, 4, 5},
-      .uvs_indices = {0, 2, 3},
-  };
+  triangles_indices[3] = (face_t){.vertex_indices = {3, 4, 5},
+                                  .uvs_indices = {0, 2, 3},
+                                  .normal_indices = {
+                                      1,
+                                      1,
+                                      1,
+                                  }};
 
-  triangles_indices[4] = (face_t){
-      .vertex_indices = {5, 4, 6},
-      .uvs_indices = {0, 1, 2},
-  };
+  triangles_indices[4] = (face_t){.vertex_indices = {5, 4, 6},
+                                  .uvs_indices = {0, 1, 2},
+                                  .normal_indices = {
+                                      2,
+                                      2,
+                                      2,
+                                  }};
 
-  triangles_indices[5] = (face_t){
-      .vertex_indices = {5, 6, 7},
-      .uvs_indices = {0, 2, 3},
-  };
+  triangles_indices[5] = (face_t){.vertex_indices = {5, 6, 7},
+                                  .uvs_indices = {0, 2, 3},
+                                  .normal_indices = {
+                                      2,
+                                      2,
+                                      2,
+                                  }};
 
-  triangles_indices[6] = (face_t){
-      .vertex_indices = {7, 6, 1},
-      .uvs_indices = {0, 1, 2},
-  };
-  triangles_indices[7] = (face_t){
-      .vertex_indices = {7, 1, 0},
-      .uvs_indices = {0, 2, 3},
-  };
+  triangles_indices[6] = (face_t){.vertex_indices = {7, 6, 1},
+                                  .uvs_indices = {0, 1, 2},
+                                  .normal_indices = {
+                                      3,
+                                      3,
+                                      3,
+                                  }};
+  triangles_indices[7] = (face_t){.vertex_indices = {7, 1, 0},
+                                  .uvs_indices = {0, 2, 3},
+                                  .normal_indices = {3, 3, 3}};
 
-  triangles_indices[8] = (face_t){
-      .vertex_indices = {1, 6, 4},
-      .uvs_indices = {0, 1, 2},
-  };
+  triangles_indices[8] = (face_t){.vertex_indices = {1, 6, 4},
+                                  .uvs_indices = {0, 1, 2},
+                                  .normal_indices = {4, 4, 4}};
 
-  triangles_indices[9] = (face_t){
-      .vertex_indices = {1, 4, 2},
-      .uvs_indices = {0, 2, 3},
-  };
+  triangles_indices[9] = (face_t){.vertex_indices = {1, 4, 2},
+                                  .uvs_indices = {0, 2, 3},
+                                  .normal_indices = {4, 4, 4}};
 
-  triangles_indices[10] = (face_t){
-      .vertex_indices = {5, 7, 0},
-      .uvs_indices = {0, 1, 2},
-  };
-  triangles_indices[11] = (face_t){
-      .vertex_indices = {5, 0, 3},
-      .uvs_indices = {0, 2, 3},
-  };
+  triangles_indices[10] = (face_t){.vertex_indices = {5, 7, 0},
+                                   .uvs_indices = {0, 1, 2},
+                                   .normal_indices = {
+                                       5,
+                                       5,
+                                       5,
+                                   }};
+  triangles_indices[11] = (face_t){.vertex_indices = {5, 0, 3},
+                                   .uvs_indices = {0, 2, 3},
+                                   .normal_indices = {5, 5, 5}};
 
-  mesh *mesh = make_mesh(c_vertices, 8, uvs, 4, triangles_indices, 12);
-
+  mesh *mesh =
+      make_mesh(c_vertices, 8, uvs, 4, triangles_indices, 12, 6, normals);
   struct texture loaded_texture = load_texture_from_file(
       "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
   SDL_Event event;
@@ -184,10 +216,11 @@ int create_sdl_window() {
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer, 0x000000);
 
-    draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer, frame_buffer);
-    rotation.z += 1.0;
-    //  draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
-    //            color3);
+    // draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer,
+    // frame_buffer);
+    rotation.x += 1.0;
+    draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
+              color3);
 
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
