@@ -8,6 +8,8 @@
 #include "mesh.h"
 #include "texture.h"
 #include <stdint.h>
+#include "light.h"
+
 
 uint32_t *create_framebuff();
 
@@ -33,4 +35,8 @@ void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
 void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
                float *zbuffer, uint32_t color1, uint32_t color2,
                uint32_t color3);
+
+
+void draw_flatshaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
+               float *zbuffer,uint32_t color, float ambient, light light);
 #endif // C_DRAW_H

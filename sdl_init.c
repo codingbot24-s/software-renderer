@@ -5,6 +5,7 @@
 #include "sdl_init.h"
 #include "constant.h"
 #include "draw.h"
+#include "light.h"
 #include "mesh.h"
 #include "texture.h"
 #include "vec.h"
@@ -55,7 +56,7 @@ int create_sdl_window() {
   matrix proj_matrix =
       make_projection_matrix(WIDTH, HIEGHT, FOV, FAR_PLANE, NEAR_PLANE);
   // triangle vertices
-  uint32_t color1 = 0xFFFFFF;
+  uint32_t color1 = 0x00FF00;
   uint32_t color2 = 0xFFFFFF;
   uint32_t color3 = 0xFFFFFF;
   // TODO: remove all mallocs from here there should be no malloc in this means
@@ -186,7 +187,11 @@ int create_sdl_window() {
   mesh *mesh =
       make_mesh(c_vertices, 8, uvs, 4, triangles_indices, 12, 6, normals);
   struct texture loaded_texture = load_texture_from_file(
-      "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+  
+      "./image/uv_checker_512.png");
+
+  light light = make_light((vec3){0.0,1.0,0.0,},1.0);
+
   SDL_Event event;
   while (running == true) {
     while (SDL_PollEvent(&event)) {
@@ -216,11 +221,13 @@ int create_sdl_window() {
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer, 0x000000);
 
-    // draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer,
+    //  draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer,
     // frame_buffer);
-    rotation.x += 1.0;
-    draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
-              color3);
+
+    draw_flatshaded(mesh, proj_matrix,frame_buffer,z_buffer,color1,0.2,light);
+    rotation.z += 1.0;
+    //draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
+    //          color3);
 
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);

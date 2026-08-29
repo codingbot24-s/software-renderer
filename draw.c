@@ -6,14 +6,17 @@
 #include "mesh.h"
 #include "texture.h"
 #include "vec.h"
-#include <SDL3/SDL_haptic.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include "light.h"
 
+
+// TODO: use back face culling also
 bool is_back_face(vec3 v1, vec3 v2, vec3 v3);
+float clamp(float a, float maximum, float minimum);
+
 
 uint32_t *create_framebuff() {
   uint32_t *framebuff = (uint32_t *)malloc(WIDTH * HIEGHT * sizeof(uint32_t));
@@ -387,4 +390,65 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
       }
     }
   }
+}
+
+
+
+void draw_flatshaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
+               float *zbuffer,uint32_t color, float ambient, light light) {
+
+  for (int i = 0; i < mesh->num_face_t;++i) {
+    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+
+    vec3 edge1 = v3_sub(v2, v1);
+    vec3 edge2 = v3_sub(v3,v1);
+
+    vec3 cross = v3_cross(edge1, edge2);
+    vec3 cross_norm = v3_normalize(cross);
+    vec3 to_camera = v3_normalize(v1);
+    if (v3_dot(cross_norm, to_camera) > 0.0) {
+      continue;
+    }
+
+    screen_space_vertex p1 = project_to_screen(v1,proj_matrix);
+    screen_space_vertex p2 = project_to_screen(v2,proj_matrix);
+    screen_space_vertex p3 = project_to_screen(v3,proj_matrix);
+
+    
+    int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
+    int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
+    int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
+    int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
+
+    for (int i = minx; i < maxx;++i) {
+      for (int j = miny; j < maxy; ++j) {
+        vec3 point = (vec3){i+ 0.5, j + 0.5,0.0};
+        float intensity = clamp(v3_dot(cross_norm,light.direction),ambient, 1.0);
+        uint32_t r = (color >> 16) & 0xFF;
+        uint32_t g = (color >> 8) & 0xFF;
+        uint32_t b = (color) & 0xFF;
+
+        float red = r * intensity;
+        float green = g * intensity;
+        float blue = b * intensity;
+  
+        uint32_t color = ((uint32_t)red << 16 | (uint32_t)green << 8 | (uint32_t)blue);
+        
+        // try without zindex
+        put_pixel(framebuffer,point.x, point.y,color);
+      }
+    }
+  }  
+}
+
+float clamp(float a, float maximum, float minimum) {
+  if (a < minimum) {
+    return minimum;
+  }else if (a > maximum) {
+    return maximum;
+  }
+
+  return a;
 }
