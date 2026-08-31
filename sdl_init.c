@@ -23,6 +23,7 @@ void apply_transformation_normals(mesh *mesh, matrix view_matrix);
 static bool running = true;
 
 int create_sdl_window() {
+  
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("sdl init failed %s\n", SDL_GetError());
     return -1;
@@ -186,10 +187,10 @@ int create_sdl_window() {
                                    .uvs_indices = {0, 2, 3},
                                    .normal_indices = {5, 5, 5}};
 
-  mesh *mesh =
+  //mesh *mesh =
       make_mesh(c_vertices, 8, uvs, 4, triangles_indices, 12, 6, normals);
   struct texture loaded_texture = load_texture_from_file(
-      "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+      "./image/uv_checker_512.png");
   matrix l_v_m = make_view_matrix(eye, target);
   light l =
       make_light((vec3){0.0, 0.0, 0.0}, l_v_m, (vec3){0.0, 1.0, 0.0}, 1.0);

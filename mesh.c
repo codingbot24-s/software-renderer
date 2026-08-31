@@ -1,46 +1,80 @@
 //
-// 1. if all the weights are positive
+//
 // Created by saad on 8/10/26.
 //
 
 #include "mesh.h"
 #include "vec.h"
+#include <stdio.h>
 #include <stdlib.h>
 
-mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
-                face_t *triangles, int face_t_count, int normals_count,
-                vec3 *normals) {
-
-  mesh *mesh = malloc(sizeof(mesh));
-  mesh->vertices = malloc(vert_count * sizeof(vec3));
-  mesh->transformend_vertices = malloc(vert_count * sizeof(vec3));
-  mesh->normals = malloc(normals_count * sizeof(vec3));
-  mesh->transformed_normals = malloc(normals_count * sizeof(vec3));
-  mesh->uvs = malloc(uvs_count * sizeof(vec2));
-  mesh->faces = malloc(face_t_count * sizeof(face_t));
-
-  for (int i = 0; i < vert_count; ++i) {
-    mesh->vertices[i] = vertices[i];
+int is_line_ending(const char* buffer, int idx, int end_idx) {
+  if (buffer[idx] == '\0') return 1;
+  if (buffer[idx] == '\n') return 1; 
+  if (buffer[idx] == '\r')
+  {
+    if ((idx + 1 < end_idx) && (buffer[idx + 1]  != '\n'))
+    {
+      return 1;
+    }
+    
   }
-
-  for (int i = 0; i < normals_count; ++i) {
-    mesh->normals[i] = normals[i];
-  }
-
-  for (int i = 0; i < uvs_count; ++i) {
-    mesh->uvs[i] = uvs[i];
-  }
-
-  for (int i = 0; i < face_t_count; ++i) {
-    mesh->faces[i] = triangles[i];
-  }
-
-  mesh->normals_count = normals_count;
-  mesh->num_face_t = face_t_count;
-  mesh->uvs_count = uvs_count;
-  mesh->vert_count = vert_count;
-
-  return mesh;
+  
+  return 0;
 }
 
-void free_mesh(mesh *mesh) {}
+int get_line_info(const char* buffer, size_t bufflen, size_t* num_lines) {
+  
+  int num_of_line = 0;
+  for (int i = 0; i < bufflen; i++)
+  {
+    if (is_line_ending(buffer,i,bufflen))
+    {
+      // line ended increase the line count
+      num_lines++;
+    }
+     
+  }
+  
+}
+// NOTE: always check before using this function that 
+// this is not returning null else we will get the crash
+mesh* load_mesh(const char* path) {
+  FILE* f = fopen(path,"r");
+  if (f == NULL) {
+    fprintf(stderr,"cant open the file \n");
+    return NULL;
+  }
+  
+  if(fseek(f,0,SEEK_END) != 0) {
+    fprintf(stderr, "seekin error \n");
+    return NULL;
+  }
+  ssize_t fsize = ftell(f);
+  rewind(f);
+  
+  char* buffer = malloc(fsize + 1);
+  if (buffer == NULL)
+  {
+    fprintf(stderr,"Cant allocate the buffer for reading \n");
+    return NULL;
+  }
+
+  size_t bytes_read = fread(buffer,1,fsize,f);
+  if (bytes_read < fsize)
+  {
+    fprintf(stderr,"cant read the file \n");
+    free(buffer);
+    return NULL;
+  }
+  
+  buffer[bytes_read] = '\0';
+  printf("readed %s\n",bytes_read);
+
+  // we have readed the file in buffer now we need to extract the 
+  // the vertices
+
+}
+
+void delete_mesh() {}
+
