@@ -4,12 +4,11 @@
 
 #ifndef C_DRAW_H
 #define C_DRAW_H
+#include "light.h"
 #include "mat.h"
 #include "mesh.h"
 #include "texture.h"
 #include <stdint.h>
-#include "light.h"
-
 
 uint32_t *create_framebuff();
 
@@ -36,7 +35,15 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
                float *zbuffer, uint32_t color1, uint32_t color2,
                uint32_t color3);
 
-
 void draw_flatshaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
-               float *zbuffer,uint32_t color, float ambient, light light);
+                     float *zbuffer, uint32_t color, float ambient,
+                     light light);
+
+void draw_phong_shaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
+                       float *zbuffer, uint32_t color, float ambient,
+                       light light);
+
+void draw_textured_phong_shaded(mesh *mesh, matrix proj_matrix,
+                                uint32_t *framebuffer, float *zbuffer,
+                                float ambient, light light, texture *texture);
 #endif // C_DRAW_H

@@ -57,5 +57,6 @@ SDL_Color sample_texel(texture *texture, vec2 uv_cor) {
   int x = (int)((texture->width - 1) * u);
   int y = (int)((texture->height - 1) * v);
 
+
   return texture->pixels[y * texture->width + x];
 }

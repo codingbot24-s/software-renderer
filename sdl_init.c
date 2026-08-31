@@ -18,6 +18,7 @@
 
 void clean_zbuffer(float *z_buffer);
 void apply_transformation(mesh *mesh, matrix view_matrix);
+void apply_transformation_normals(mesh *mesh, matrix view_matrix);
 
 static bool running = true;
 
@@ -41,6 +42,7 @@ int create_sdl_window() {
   }
 
   SDL_SetWindowResizable(window, true);
+
   uint32_t *frame_buffer = create_framebuff();
   SDL_Texture *texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888,
@@ -56,7 +58,7 @@ int create_sdl_window() {
   matrix proj_matrix =
       make_projection_matrix(WIDTH, HIEGHT, FOV, FAR_PLANE, NEAR_PLANE);
   // triangle vertices
-  uint32_t color1 = 0x00FF00;
+  uint32_t color1 = 0xFFFFFF;
   uint32_t color2 = 0xFFFFFF;
   uint32_t color3 = 0xFFFFFF;
   // TODO: remove all mallocs from here there should be no malloc in this means
@@ -187,10 +189,10 @@ int create_sdl_window() {
   mesh *mesh =
       make_mesh(c_vertices, 8, uvs, 4, triangles_indices, 12, 6, normals);
   struct texture loaded_texture = load_texture_from_file(
-  
-      "./image/uv_checker_512.png");
-
-  light light = make_light((vec3){0.0,1.0,0.0,},1.0);
+      "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+  matrix l_v_m = make_view_matrix(eye, target);
+  light l =
+      make_light((vec3){0.0, 0.0, 0.0}, l_v_m, (vec3){0.0, 1.0, 0.0}, 1.0);
 
   SDL_Event event;
   while (running == true) {
@@ -213,22 +215,28 @@ int create_sdl_window() {
     matrix view_matrix = make_view_matrix(eye, target);
     matrix model_view_matrix = mat_mul_mat(view_matrix, model_matrix);
 
-    // BUG: after uncommenting this line trinagle behave differently
     apply_transformation(mesh, model_view_matrix);
-
+    apply_transformation_normals(mesh, model_view_matrix);
     clean_zbuffer(z_buffer);
-
+    //
     // this will draw black full in every frame
     clear_framebuffer(frame_buffer, 0x000000);
 
-    //  draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer,
+    // draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer,
     // frame_buffer);
 
-    draw_flatshaded(mesh, proj_matrix,frame_buffer,z_buffer,color1,0.2,light);
-    rotation.z += 1.0;
-    //draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
-    //          color3);
+    rotation.x += 1.0;
+    //    draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
+    //              color3);
 
+    // draw_flatshaded(mesh, proj_matrix, frame_buffer, z_buffer, color1, 0.2,
+    //                 light);
+
+    // draw_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer, color1, 0.2,
+    //                   l);
+
+    draw_textured_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer, 0.2,
+                               l, &loaded_texture);
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);
@@ -248,12 +256,14 @@ void clean_zbuffer(float *z_buffer) {
   }
 }
 
-void apply_transformation(mesh *mesh, matrix view_matrix) {
-  // NOTE: we changed from tt_vert to original vert
-  //  check this works
+void apply_transformation_normals(mesh *mesh, matrix view_matrix) {
+  for (int i = 0; i < mesh->normals_count; ++i) {
+    mesh->transformed_normals[i] =
+        matrix_mul_vec3(view_matrix, mesh->normals[i]);
+  }
+}
 
-  // try changing this thing or search in other renderes how points been
-  // transformed in camera space
+void apply_transformation(mesh *mesh, matrix view_matrix) {
   for (int i = 0; i < mesh->vert_count; ++i) {
     mesh->transformend_vertices[i] =
         matrix_mul_vec3(view_matrix, mesh->vertices[i]);

@@ -3,20 +3,23 @@
 
 #include "draw.h"
 #include "constant.h"
+#include "light.h"
+#include "mat.h"
 #include "mesh.h"
 #include "texture.h"
 #include "vec.h"
+#include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_process.h>
+#include <linux/limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "light.h"
-
 
 // TODO: use back face culling also
 bool is_back_face(vec3 v1, vec3 v2, vec3 v3);
 float clamp(float a, float maximum, float minimum);
-
 
 uint32_t *create_framebuff() {
   uint32_t *framebuff = (uint32_t *)malloc(WIDTH * HIEGHT * sizeof(uint32_t));
@@ -356,7 +359,7 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
 
           float pixel_inw = w0 * p1.inw + w1 * p2.inw + w2 * p3.inw;
 
-          // vertex inverse colors
+          // color * pixel_inverse
           float v1_cr = c0r * p1.inw;
           float v1_cg = c0g * p1.inw;
           float v1_cb = c0b * p1.inw;
@@ -392,63 +395,281 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
   }
 }
 
-
-
+// TODO: draw_flatshaded is not working as expect light is all over model
 void draw_flatshaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
-               float *zbuffer,uint32_t color, float ambient, light light) {
+                     float *zbuffer, uint32_t color, float ambient,
+                     light light) {
 
-  for (int i = 0; i < mesh->num_face_t;++i) {
+  for (int i = 0; i < mesh->num_face_t; ++i) {
     vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
     vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
     vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
 
     vec3 edge1 = v3_sub(v2, v1);
-    vec3 edge2 = v3_sub(v3,v1);
+    vec3 edge2 = v3_sub(v3, v1);
 
     vec3 cross = v3_cross(edge1, edge2);
     vec3 cross_norm = v3_normalize(cross);
     vec3 to_camera = v3_normalize(v1);
-    if (v3_dot(cross_norm, to_camera) > 0.0) {
+    if (v3_dot(cross_norm, to_camera) >= 0.0) {
       continue;
     }
 
-    screen_space_vertex p1 = project_to_screen(v1,proj_matrix);
-    screen_space_vertex p2 = project_to_screen(v2,proj_matrix);
-    screen_space_vertex p3 = project_to_screen(v3,proj_matrix);
+    screen_space_vertex p1 = project_to_screen(v1, proj_matrix);
+    screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
+    screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
 
-    
     int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
     int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
     int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
     int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
 
-    for (int i = minx; i < maxx;++i) {
-      for (int j = miny; j < maxy; ++j) {
-        vec3 point = (vec3){i+ 0.5, j + 0.5,0.0};
-        float intensity = clamp(v3_dot(cross_norm,light.direction),ambient, 1.0);
-        uint32_t r = (color >> 16) & 0xFF;
-        uint32_t g = (color >> 8) & 0xFF;
-        uint32_t b = (color) & 0xFF;
+    float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
 
-        float red = r * intensity;
-        float green = g * intensity;
-        float blue = b * intensity;
-  
-        uint32_t color = ((uint32_t)red << 16 | (uint32_t)green << 8 | (uint32_t)blue);
-        
-        // try without zindex
-        put_pixel(framebuffer,point.x, point.y,color);
+    for (int x = minx; x < maxx; ++x) {
+      for (int j = miny; j < maxy; ++j) {
+        vec3 point = (vec3){x + 0.5, j + 0.5, 0.0};
+
+        float w0 = edge_function(p2.vertex, p3.vertex, point) / area;
+        float w1 = edge_function(p3.vertex, p1.vertex, point) / area;
+        float w2 = edge_function(p1.vertex, p2.vertex, point) / area;
+
+        if ((w0 >= 0 && w1 >= 0 && w2 >= 0) ||
+            (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
+
+          float intensity =
+              clamp(v3_dot(cross_norm, light.direction), ambient, 1.0);
+          uint32_t r = (color >> 16) & 0xFF;
+          uint32_t g = (color >> 8) & 0xFF;
+          uint32_t b = (color) & 0xFF;
+
+          float red = r * intensity;
+          float green = g * intensity;
+          float blue = b * intensity;
+
+          uint32_t final_color =
+              ((uint32_t)red << 16 | (uint32_t)green << 8 | (uint32_t)blue);
+
+          float z = w0 * p1.vertex.z + w1 * p2.vertex.z + w2 * p3.vertex.z;
+
+          int index = j * WIDTH + x;
+          if (z < zbuffer[index]) {
+            put_pixel(framebuffer, point.x, point.y, final_color);
+            zbuffer[index] = z;
+          }
+        }
       }
     }
-  }  
+  }
 }
 
 float clamp(float a, float maximum, float minimum) {
   if (a < minimum) {
     return minimum;
-  }else if (a > maximum) {
+  } else if (a > maximum) {
     return maximum;
   }
 
   return a;
+}
+
+void draw_phong_shaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
+                       float *zbuffer, uint32_t color, float ambient,
+                       light light) {
+
+  for (int i = 0; i < mesh->num_face_t; ++i) {
+    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+
+    vec3 n1 = mesh->normals[mesh->faces[i].normal_indices[0]];
+    vec3 n2 = mesh->normals[mesh->faces[i].normal_indices[1]];
+    vec3 n3 = mesh->normals[mesh->faces[i].normal_indices[2]];
+
+    if (is_back_face(v1, v2, v3)) {
+      continue;
+    }
+
+    screen_space_vertex p1 = project_to_screen(v1, proj_matrix);
+    screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
+    screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
+
+    int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
+    int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
+    int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
+    int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
+
+    float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
+
+    for (int x = minx; x < maxx; ++x) {
+      for (int y = miny; y < maxy; ++y) {
+        vec3 point = (vec3){x + 0.5, y + 0.5, 0};
+
+        float w0 = edge_function(p2.vertex, p3.vertex, point) / area;
+        float w1 = edge_function(p3.vertex, p1.vertex, point) / area;
+        float w2 = edge_function(p1.vertex, p2.vertex, point) / area;
+
+        if ((w0 >= 0 && w1 >= 0 && w2 >= 0) ||
+            (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
+          // this p.vertex.z is ndcz to access w of clip space use
+          // p.inw which will give us the 1/clip_space_w
+          float z = w0 * p1.vertex.z + w1 * p2.vertex.z + w2 * p3.vertex.z;
+          int index = y * WIDTH + x;
+
+          if (z < zbuffer[index]) {
+
+            float pixel_inw = w0 * p1.inw + w1 * p2.inw + w2 * p3.inw;
+            float interpolated_n_x =
+                (n1.x * p1.inw * w0 + n2.x * p2.inw * w1 + n3.x * p3.inw * w2) /
+                pixel_inw;
+            float interpolated_n_y =
+                (n1.y * p1.inw * w0 + n2.y * p2.inw * w1 + n3.y * p3.inw * w2) /
+                pixel_inw;
+            float interpolated_n_z =
+                (n1.z * p1.inw * w0 + n2.z * p2.inw * w1 + n3.z * p3.inw * w2) /
+                pixel_inw;
+
+            vec3 interpolated_normal = v3_normalize(
+                (vec3){interpolated_n_x, interpolated_n_y, interpolated_n_z});
+
+            float interpolated_pos_x =
+                v1.x * p1.inw * w0 + v2.x * p2.inw * w1 + v3.x * p3.inw * w2;
+            float interpolated_pos_y =
+                v1.y * p1.inw * w0 + v2.y * p2.inw * w1 + v3.y * p3.inw * w2;
+            float interpolated_pos_z =
+                v1.z * p1.inw * w0 + v2.z * p2.inw * w1 + v3.z * p3.inw * w2;
+
+            vec3 interpolated_position =
+                (vec3){.x = interpolated_pos_x / pixel_inw,
+                       interpolated_pos_y / pixel_inw,
+
+                       interpolated_pos_z / pixel_inw};
+            vec3 ray_dir =
+                v3_normalize(v3_sub(light.position, interpolated_position));
+            float intensity =
+                v3_dot(interpolated_normal, ray_dir) * light.intensity;
+            intensity = clamp(intensity, 1.0, ambient);
+
+            uint32_t r = (color >> 16) & 0xFF;
+            uint32_t g = (color >> 8) & 0xFF;
+            uint32_t b = (color) & 0xFF;
+
+            float red = r * intensity;
+            float green = g * intensity;
+            float blue = b * intensity;
+
+            uint32_t final_color =
+                ((uint32_t)red << 16 | (uint32_t)green << 8 | (uint32_t)blue);
+
+            put_pixel(framebuffer, point.x, point.y, final_color);
+            zbuffer[index] = z;
+          }
+        }
+      }
+    }
+  }
+}
+
+void draw_textured_phong_shaded(mesh *mesh, matrix proj_matrix,
+                                uint32_t *framebuffer, float *zbuffer,
+                                float ambient, light light, texture *texture) {
+  for (int i = 0; i < mesh->num_face_t; ++i) {
+
+    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
+    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
+    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+
+    vec2 uv1 = mesh->uvs[mesh->faces[i].uvs_indices[0]];
+    vec2 uv2 = mesh->uvs[mesh->faces[i].uvs_indices[1]];
+    vec2 uv3 = mesh->uvs[mesh->faces[i].uvs_indices[2]];
+
+    vec3 n1 = mesh->transformed_normals[mesh->faces[i].normal_indices[0]];
+    vec3 n2 = mesh->transformed_normals[mesh->faces[i].normal_indices[1]];
+    vec3 n3 = mesh->transformed_normals[mesh->faces[i].normal_indices[2]];
+
+    if (is_back_face(v1, v2, v3)) {
+      continue;
+    }
+
+    screen_space_vertex p1 = project_to_screen(v1, proj_matrix);
+    screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
+    screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
+
+    int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
+    int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
+    int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
+    int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
+    float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
+    for (int x = minx; x < maxx; ++x) {
+      for (int y = miny; y < maxy; ++y) {
+        vec3 point = (vec3){x + 0.5, y + 0.5, 0.0};
+
+        float w0 = edge_function(p2.vertex, p3.vertex, point) / area;
+        float w1 = edge_function(p3.vertex, p1.vertex, point) / area;
+        float w2 = edge_function(p1.vertex, p2.vertex, point) / area;
+
+        if ((w0 >= 0 && w1 >= 0 && w2 >= 0) ||
+            (w0 <= 0 && w1 <= 0 && w2 <= 0)) {
+
+          float z = w0 * p1.vertex.z + w1 * p2.vertex.z + w2 * p3.vertex.z;
+          int index = y * WIDTH + x;
+          if (z < zbuffer[index]) {
+
+            float pixel_inw = w0 * p1.inw + w1 * p2.inw + w2 * p3.inw;
+            float interpolated_n_x =
+                (n1.x * p1.inw * w0 + n2.x * p2.inw * w1 + n3.x * p3.inw * w2) /
+                pixel_inw;
+            float interpolated_n_y =
+                (n1.y * p1.inw * w0 + n2.y * p2.inw * w1 + n3.y * p3.inw * w2) /
+                pixel_inw;
+            float interpolated_n_z =
+                (n1.z * p1.inw * w0 + n2.z * p2.inw * w1 + n3.z * p3.inw * w2) /
+                pixel_inw;
+
+            vec3 interpolated_normal = v3_normalize(
+                (vec3){interpolated_n_x, interpolated_n_y, interpolated_n_z});
+
+            float interpolated_pos_x =
+                v1.x * p1.inw * w0 + v2.x * p2.inw * w1 + v3.x * p3.inw * w2;
+            float interpolated_pos_y =
+                v1.y * p1.inw * w0 + v2.y * p2.inw * w1 + v3.y * p3.inw * w2;
+            float interpolated_pos_z =
+                v1.z * p1.inw * w0 + v2.z * p2.inw * w1 + v3.z * p3.inw * w2;
+
+            vec3 interpolated_position =
+                (vec3){.x = interpolated_pos_x / pixel_inw,
+                       interpolated_pos_y / pixel_inw,
+
+                       interpolated_pos_z / pixel_inw};
+            vec3 ray_dir =
+                v3_normalize(v3_sub(light.position, interpolated_position));
+            float intensity =
+                v3_dot(interpolated_normal, ray_dir) * light.intensity;
+            intensity = clamp(intensity, 1.0, ambient);
+            // this one was wrong we just fixed it and now our light is working
+            // correcty
+            float interpolated_u =
+                w0 * uv1.x * p1.inw + w1 * uv2.x * p2.inw + w2 * uv3.x * p3.inw;
+            float interpolated_v =
+                w0 * uv1.y * p1.inw + w1 * uv2.y * p2.inw + w2 * uv3.y * p3.inw;
+
+            float u = interpolated_u / pixel_inw;
+            float v = interpolated_v / pixel_inw;
+
+            SDL_Color texel = sample_texel(texture, (vec2){u, v});
+
+            float r = texel.r * intensity;
+            float g = texel.g * intensity;
+            float b = texel.b * intensity;
+
+            // TODO: add alpha channel
+            uint32_t color =
+                ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
+            put_pixel(framebuffer, point.x, point.y, color);
+            zbuffer[index] = z;
+          }
+        }
+      }
+    }
+  }
 }
