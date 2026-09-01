@@ -8,6 +8,10 @@
 #include "mesh.h"
 #include "texture.h"
 #include "vec.h"
+#include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_process.h>
+#include <linux/limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -642,8 +646,7 @@ void draw_textured_phong_shaded(mesh *mesh, matrix proj_matrix,
             float intensity =
                 v3_dot(interpolated_normal, ray_dir) * light.intensity;
             intensity = clamp(intensity, 1.0, ambient);
-            // this one was wrong we just fixed it and now our light is working
-            // correcty
+
             float interpolated_u =
                 w0 * uv1.x * p1.inw + w1 * uv2.x * p2.inw + w2 * uv3.x * p3.inw;
             float interpolated_v =

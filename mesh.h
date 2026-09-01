@@ -33,7 +33,5 @@ typedef struct mesh {
   int num_face_t;
 } mesh;
 
-mesh *make_mesh(vec3 *vertices, int vert_count, vec2 *uvs, int uvs_count,
-                face_t *triangles, int face_t_count, int normals_count,
-                vec3 *normals);
+mesh *load_mesh(const char *path);
 #endif // C_MESH_H
