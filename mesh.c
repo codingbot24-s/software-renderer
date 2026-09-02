@@ -32,11 +32,43 @@ void get_line_info(const char *buffer, size_t bufflen, size_t *num_lines) {
   }
 }
 
-void parse_line(char *buffer, int diff) {
-  char line_buff[1024];
-  memcpy(line_buff, buffer, diff);
-  printf("line is %s\n", line_buff);
+
+void skip_space(const char **token) {
+	while ((*token)[0] == ' ' || (*token)[0] == '\t') {
+		(*token)++;
+	}
 }
+
+int is_space(const char chr) {
+	if (chr == ' ' || chr == '\t') {
+		return 1;
+    } else {
+		return 0;
+	}
+}
+int parse_line(char *buffer, int diff) {
+
+	char line_buff[255];
+	const char* token;
+  // we need to check this
+  memcpy(line_buff, buffer, diff);
+  token = line_buff;
+  skip_space(&token);
+
+  if (token[0] == '\0') {
+	  return 0;
+  }
+  // comments
+  if (token[0] == '#') {
+	  return 0;
+  }
+
+  if (token[0] == 'v' && is_space(token[1])) {
+	printf("line found \n");
+  }
+
+}
+
 // NOTE: always check before using this function that
 // this is not returning null else we will get the crash
 mesh *load_mesh(const char *path) {
