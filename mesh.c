@@ -3,7 +3,7 @@
 // Created by saad on 8/10/26.
 //
 
-#include "mesh.h"
+#include "vec.h"
 #include <SDL3/SDL_pixels.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +23,7 @@ int is_line_ending(const char *buffer, int idx, int end_idx) {
   return 0;
 }
 
-void get_line_info(const char *buffer, size_t bufflen, size_t *num_lines) {
+void get_line_count(const char *buffer, size_t bufflen, size_t *num_lines) {
 
   for (int i = 0; i < bufflen; i++) {
     if (is_line_ending(buffer, i, bufflen)) {
@@ -32,12 +32,6 @@ void get_line_info(const char *buffer, size_t bufflen, size_t *num_lines) {
   }
 }
 
-
-void skip_space(char **token) {
-	while ((*token)[0] == ' ' || (*token)[0] == '\t') {
-		(*token)++;
-	}
-}
 
 int is_space(const char chr) {
 	if (chr == ' ' || chr == '\t') {
@@ -48,28 +42,12 @@ int is_space(const char chr) {
 }
 
 
-void kill_space(char** str) {
-    int i = 0;
-    int j = 0;
-
-    while ((*str)[i] != '\0') {
-        if ((*str)[i] != ' ') {
-            (*str)[j] = (*str)[i];
-            j++;
-        };
-        i++;
-    };
-
-    str[j] = '\0';
-}
 int parse_line(char *buffer, int diff) {
 
     char line_buff[255];
 	char* token;
-    memcpy(line_buff, buffer, diff);
-    token = line_buff;
-    // skip the first space
-    skip_space(&token);
+	memcpy(line_buff, buffer, diff);
+	token = line_buff;
 
     if (token[0] == '\0') {
         return 0;
@@ -77,19 +55,14 @@ int parse_line(char *buffer, int diff) {
     if (token[0] == '#') {
         return 0;
     }
-
-    if (token[0] == 'v' && is_space(token[1])) {
+   if (token[0] == 'v' && is_space(token[1])) {
         int vert_count = 0;
-        float x,y,z;
-        kill_space(&token);
-        // we cant do that because - is also char
-        token+= 1;
-        char const* curr = token;
-        
-        
+        float x, y, z;
+        if (sscanf(token, "v %f %f %f", &x, &y, &z) == 3) {
+			vec3 vertex = (vec3){x,y,z};
+			append(vertex, vector);
+		}
     }
-
-
 }
 
 // NOTE: always check before using this function that
@@ -122,10 +95,9 @@ mesh *load_mesh(const char *path) {
   }
 
   buffer[bytes_read] = '\0';
-  // we have readed the file in buffer now we need to extract the
-  // the vertices
+
   size_t num_lines = 0;
-  get_line_info(buffer, strlen(buffer), &num_lines);
+  get_line_count(buffer, strlen(buffer), &num_lines);
 
   for (int i = 0; i < strlen(buffer); ++i) {
     char *eol = strchr(buffer, '\n');

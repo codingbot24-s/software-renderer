@@ -1,6 +1,8 @@
 
 #include "vec.h"
 #include <math.h>
+#include <stdexcept>
+#include <stdlib.h>
 
 // WE WILL DEBUG THIS IN ANOTHER STREAM
 vec3 v3_init(float x, float y, float z)
@@ -58,4 +60,36 @@ vec4 v4_init(float x, float y, float z, float w)
       .z = z,
       .w = w,
   };
+}
+
+// NOTE: check for null otherwise we will get the crash
+vector make_vector(data_type type, int count) {
+  vector vector = {
+      .type = type,
+      // initialy we can push 8 element
+      .len = 8,
+      .count = 0,
+      .data = malloc(8 * sizeof(data_type)),
+  };
+  return vector;
+}
+
+int append(vector *vec, void *elem) {
+	if (vec->count >= vec->len) {
+		vec->len = vec->len * 2;
+		vec->data = realloc(vec->data,vec->len * sizeof(vec->type));
+	}
+	if (vec->type == v2_type) {
+	  vec2* v2 =  (vec2*)elem;
+	  ((vec2*)vec->data)[vec->count] = *v2;
+	  vec->count++;
+	} else if (vec->type == v3_type) {
+	  vec3 *v3 = (vec3 *)elem;
+	  ((vec3 *)vec->data)[vec->count] = *v3;
+	  vec->count++;
+	} else {
+	  vec4 *v4 = (vec4 *)elem;
+	  ((vec4*)vec->data)[vec->count] = *v4;
+	  vec->count++;
+  }
 }

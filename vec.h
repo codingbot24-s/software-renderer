@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 typedef struct vec2 {
   float x;
   float y;
@@ -25,3 +26,18 @@ typedef struct vec4 {
 } vec4;
 
 vec4 v4_init(float x, float y, float z, float w);
+
+typedef enum {
+  v2_type,
+  v3_type,
+  v4_type
+}data_type;
+
+typedef struct vector {
+	void *data;
+	int len;
+	int count;
+	data_type type;
+} vector;
+
+vector make_vector (data_type type, int count);
