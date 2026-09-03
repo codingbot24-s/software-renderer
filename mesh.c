@@ -33,7 +33,7 @@ void get_line_info(const char *buffer, size_t bufflen, size_t *num_lines) {
 }
 
 
-void skip_space(const char **token) {
+void skip_space(char **token) {
 	while ((*token)[0] == ' ' || (*token)[0] == '\t') {
 		(*token)++;
 	}
@@ -46,26 +46,49 @@ int is_space(const char chr) {
 		return 0;
 	}
 }
+
+
+void kill_space(char** str) {
+    int i = 0;
+    int j = 0;
+
+    while ((*str)[i] != '\0') {
+        if ((*str)[i] != ' ') {
+            (*str)[j] = (*str)[i];
+            j++;
+        };
+        i++;
+    };
+
+    str[j] = '\0';
+}
 int parse_line(char *buffer, int diff) {
 
-	char line_buff[255];
-	const char* token;
-  // we need to check this
-  memcpy(line_buff, buffer, diff);
-  token = line_buff;
-  skip_space(&token);
+    char line_buff[255];
+	char* token;
+    memcpy(line_buff, buffer, diff);
+    token = line_buff;
+    // skip the first space
+    skip_space(&token);
 
-  if (token[0] == '\0') {
-	  return 0;
-  }
-  // comments
-  if (token[0] == '#') {
-	  return 0;
-  }
+    if (token[0] == '\0') {
+        return 0;
+    }
+    if (token[0] == '#') {
+        return 0;
+    }
 
-  if (token[0] == 'v' && is_space(token[1])) {
-	printf("line found \n");
-  }
+    if (token[0] == 'v' && is_space(token[1])) {
+        int vert_count = 0;
+        float x,y,z;
+        kill_space(&token);
+        // we cant do that because - is also char
+        token+= 1;
+        char const* curr = token;
+        
+        
+    }
+
 
 }
 
@@ -110,6 +133,7 @@ mesh *load_mesh(const char *path) {
       break;
     }
     parse_line(buffer, eol - buffer);
+
   }
 }
 

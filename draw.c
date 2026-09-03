@@ -8,10 +8,6 @@
 #include "mesh.h"
 #include "texture.h"
 #include "vec.h"
-#include <SDL3/SDL_gpu.h>
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_process.h>
-#include <linux/limits.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
