@@ -2,11 +2,14 @@
 // Created by saad on 8/3/26.
 //
 
+// TODO: we can add aspect ratio and correct width and hieght in window opening 
+
 #include "sdl_init.h"
 #include "constant.h"
 #include "draw.h"
 #include "light.h"
 #include "mesh.h"
+#include "texture.h"
 #include "vec.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
@@ -66,6 +69,10 @@ int create_sdl_window() {
     fprintf(stderr, "Cant load the mesh \n");
     EXIT_FAILURE;
   }
+  struct texture loaded_texture = load_texture_from_file("/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+  
+  uint32_t light_color = 0xFFFFFF;
+  
   SDL_Event event;
   while (running == true) {
     while (SDL_PollEvent(&event)) {
@@ -87,8 +94,8 @@ int create_sdl_window() {
     matrix view_matrix = make_view_matrix(eye, target);
     matrix model_view_matrix = mat_mul_mat(view_matrix, model_matrix);
 
-    // apply_transformation(mesh, model_view_matrix);
-    // apply_transformation_normals(mesh, model_view_matrix);
+    apply_transformation(mesh, model_view_matrix);
+    apply_transformation_normals(mesh, model_view_matrix);
     clean_zbuffer(z_buffer);
     //
     // this will draw black full in every frame
@@ -104,9 +111,11 @@ int create_sdl_window() {
     // draw_flatshaded(mesh, proj_matrix, frame_buffer, z_buffer, color1, 0.2,
     //                 light);
 
-    // draw_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer, color1, 0.2,
-    //                   l);
-
+    //draw_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer, light_color, 0.2,
+    //                  l);
+  
+    draw_textured_phong_shaded(mesh,proj_matrix,frame_buffer,z_buffer,0.2 ,l, &loaded_texture);
+    
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);
@@ -126,19 +135,25 @@ void clean_zbuffer(float *z_buffer) {
   }
 }
 
+
+// TEST this function its not been tested after cast
 void apply_transformation_normals(mesh *mesh, matrix view_matrix) {
   // problem: we have changed the structer of mesh from vec3* vector* so we need
   // to change the function calls that return vec3* we can cast this vector* or
   // do something else
-  for (int i = 0; i < mesh->normals_count; ++i) {
-    mesh->transformed_normals[i] =
-        matrix_mul_vec3(view_matrix, ((vec3 *)mesh->normals->data)[i]);
+   vec3* t_normals = (vec3*)mesh->transformed_normals->data;
+    vec3* normals = (vec3*)mesh->normals->data;
+	  for (int i = 0; i < mesh->normals_count; ++i) {
+	  t_normals[i] =
+        matrix_mul_vec3(view_matrix, normals[i]);
   }
 }
 
 void apply_transformation(mesh *mesh, matrix view_matrix) {
+  vec3* transformed_vertices = mesh->transformed_vertices->data;
+  vec3* vertices = mesh->vertices->data;
   for (int i = 0; i < mesh->vert_count; ++i) {
-    mesh->transformend_vertices[i] =
-        matrix_mul_vec3(view_matrix, mesh->vertices[i]);
+    transformed_vertices[i] =
+        matrix_mul_vec3(view_matrix, vertices[i]);
   }
 }

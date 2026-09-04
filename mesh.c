@@ -4,7 +4,6 @@
 //
 //
 #include "mesh.h"
-#include "mat.h"
 #include "vec.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,6 +84,10 @@ mesh *load_mesh(const char *path) {
     return NULL;
   }
   ssize_t fsize = ftell(f);
+  if (fsize < 0) {
+    fclose(f);
+    return NULL;
+  }
   rewind(f);
 
   char *buffer = malloc(fsize + 1);
@@ -115,6 +118,8 @@ mesh *load_mesh(const char *path) {
     line = strtok(NULL, "\n");
   }
 
+  free(buffer);
+  fclose(f);
   return mesh;
 }
 

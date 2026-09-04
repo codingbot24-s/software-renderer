@@ -239,20 +239,22 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
   }
 }
 
-// TODO: now we need to implement the textured cube
 
 void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
                    float *zbuffer, uint32_t *framebuffer) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
 
-    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
-    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
-    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+    vec3* t_vertices = mesh->transformed_vertices->data;
+    face_t* faces = mesh->faces->data;
+	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
-    vec2 uv1 = mesh->uvs[mesh->faces[i].uvs_indices[0]];
-    vec2 uv2 = mesh->uvs[mesh->faces[i].uvs_indices[1]];
-    vec2 uv3 = mesh->uvs[mesh->faces[i].uvs_indices[2]];
+    vec2* uvs = mesh->uvs->data;
+    vec2 uv1 = uvs[faces[i].uvs_indices[0]];
+    vec2 uv2 = uvs[faces[i].uvs_indices[1]];
+    vec2 uv3 = uvs[faces[i].uvs_indices[2]];
 
     screen_space_vertex p1 = project_to_screen(v1, proj_matrix);
     screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
@@ -316,9 +318,13 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
                uint32_t color3) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
-    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
-    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
-    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+   
+    vec3* t_vertices = mesh->transformed_vertices->data;
+    face_t* faces = mesh->faces->data;
+	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
+
 
     screen_space_vertex p1 = project_to_screen(v1, proj_matrix);
     screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
@@ -398,9 +404,12 @@ void draw_flatshaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
                      light light) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
-    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
-    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
-    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+
+    vec3* t_vertices = mesh->transformed_vertices->data;
+    face_t* faces = mesh->faces->data;
+	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
     vec3 edge1 = v3_sub(v2, v1);
     vec3 edge2 = v3_sub(v3, v1);
@@ -475,13 +484,17 @@ void draw_phong_shaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
                        light light) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
-    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
-    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
-    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
 
-    vec3 n1 = mesh->normals[mesh->faces[i].normal_indices[0]];
-    vec3 n2 = mesh->normals[mesh->faces[i].normal_indices[1]];
-    vec3 n3 = mesh->normals[mesh->faces[i].normal_indices[2]];
+    vec3* t_vertices = mesh->transformed_vertices->data;
+    face_t* faces = mesh->faces->data;
+	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
+
+    vec3* normals = mesh->normals->data;
+    vec3 n1 = normals[faces[i].normal_indices[0]];
+    vec3 n2 = normals[faces[i].normal_indices[1]];
+    vec3 n3 = normals[faces[i].normal_indices[2]];
 
     if (is_back_face(v1, v2, v3)) {
       continue;
@@ -572,17 +585,22 @@ void draw_textured_phong_shaded(mesh *mesh, matrix proj_matrix,
                                 float ambient, light light, texture *texture) {
   for (int i = 0; i < mesh->num_face_t; ++i) {
 
-    vec3 v1 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[0]];
-    vec3 v2 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[1]];
-    vec3 v3 = mesh->transformend_vertices[mesh->faces[i].vertex_indices[2]];
+    vec3* t_vertices = mesh->transformed_vertices->data;
+    face_t* faces = mesh->faces->data;
+	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
-    vec2 uv1 = mesh->uvs[mesh->faces[i].uvs_indices[0]];
-    vec2 uv2 = mesh->uvs[mesh->faces[i].uvs_indices[1]];
-    vec2 uv3 = mesh->uvs[mesh->faces[i].uvs_indices[2]];
+    vec3* normals = mesh->normals->data;
+    vec3 n1 = normals[faces[i].normal_indices[0]];
+    vec3 n2 = normals[faces[i].normal_indices[1]];
+    vec3 n3 = normals[faces[i].normal_indices[2]];
 
-    vec3 n1 = mesh->transformed_normals[mesh->faces[i].normal_indices[0]];
-    vec3 n2 = mesh->transformed_normals[mesh->faces[i].normal_indices[1]];
-    vec3 n3 = mesh->transformed_normals[mesh->faces[i].normal_indices[2]];
+    vec2* uvs = mesh->uvs->data;
+    vec2 uv1 = uvs[faces[i].uvs_indices[0]];
+    vec2 uv2 = uvs[faces[i].uvs_indices[1]];
+    vec2 uv3 = uvs[faces[i].uvs_indices[2]];
+
 
     if (is_back_face(v1, v2, v3)) {
       continue;

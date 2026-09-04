@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stddef.h>
 typedef struct vec2 {
   float x;
   float y;
@@ -37,8 +38,9 @@ typedef struct vector {
   void *data;
   int len;
   int count;
+  size_t elem_type;
   data_type type;
 } vector;
 
 vector *make_vector(data_type type);
-int append(vector *vec, void *elem);
+void append(vector *vec, void *elem);

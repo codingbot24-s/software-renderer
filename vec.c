@@ -1,5 +1,4 @@
 
-#include "vec.h"
 #include "mesh.h"
 #include <math.h>
 #include <stdint.h>
@@ -66,7 +65,7 @@ vector *make_vector(data_type type) {
     size_of_type = sizeof(vec2);
   } else if (type == v3_type) {
     size_of_type = sizeof(vec3);
-  } else if (type == sizeof(v4_type)) {
+  } else if (type == v4_type) {
     size_of_type = sizeof(vec4);
   } else if (type == face_type) {
     size_of_type = sizeof(face_t);
@@ -76,14 +75,15 @@ vector *make_vector(data_type type) {
   v->type = type;
   v->len = 8;
   v->count = 0;
+  v->elem_type = size_of_type;
   v->data = malloc(8 * size_of_type);
   return v;
 }
 
-int append(vector *vec, void *elem) {
+void append(vector *vec, void *elem) {
   if (vec->count >= vec->len) {
     vec->len = vec->len * 2;
-    vec->data = realloc(vec->data, vec->len * sizeof(vec->type));
+    vec->data = realloc(vec->data, vec->len * vec->elem_type);
   }
   if (vec->type == v2_type) {
     vec2 *v2 = (vec2 *)elem;
