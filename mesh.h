@@ -16,15 +16,15 @@ typedef struct face_t {
 
 typedef struct mesh {
   /// vertices of this mesh
-  vec3 *vertices;
-  vec3 *transformend_vertices;
+  vector *vertices;
+  vector *transformed_vertices;
   /// uvs of the meshes
-  vec2 *uvs;
+  vector *uvs;
   /// normals of the meshes
-  vec3 *normals;
-  vec3 *transformed_normals;
+  vector *normals;
+  vector *transformed_normals;
   /// face_t of this mesh
-  face_t *faces;
+  vector *faces;
   /// vert count
   int vert_count;
   /// uvs count

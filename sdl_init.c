@@ -7,7 +7,6 @@
 #include "draw.h"
 #include "light.h"
 #include "mesh.h"
-#include "texture.h"
 #include "vec.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
@@ -128,9 +127,12 @@ void clean_zbuffer(float *z_buffer) {
 }
 
 void apply_transformation_normals(mesh *mesh, matrix view_matrix) {
+  // problem: we have changed the structer of mesh from vec3* vector* so we need
+  // to change the function calls that return vec3* we can cast this vector* or
+  // do something else
   for (int i = 0; i < mesh->normals_count; ++i) {
     mesh->transformed_normals[i] =
-        matrix_mul_vec3(view_matrix, mesh->normals[i]);
+        matrix_mul_vec3(view_matrix, ((vec3 *)mesh->normals->data)[i]);
   }
 }
 

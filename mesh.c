@@ -2,67 +2,73 @@
 //
 // Created by saad on 8/10/26.
 //
-
+//
+#include "mesh.h"
+#include "mat.h"
 #include "vec.h"
-#include <SDL3/SDL_pixels.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int is_line_ending(const char *buffer, int idx, int end_idx) {
-  if (buffer[idx] == '\0')
-    return 1;
-  if (buffer[idx] == '\n')
-    return 1;
-  if (buffer[idx] == '\r') {
-    if ((idx + 1 < end_idx) && (buffer[idx + 1] != '\n')) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
-void get_line_count(const char *buffer, size_t bufflen, size_t *num_lines) {
-
-  for (int i = 0; i < bufflen; i++) {
-    if (is_line_ending(buffer, i, bufflen)) {
-      (*num_lines)++;
-    }
-  }
-}
-
-
 int is_space(const char chr) {
-	if (chr == ' ' || chr == '\t') {
-		return 1;
-    } else {
-		return 0;
-	}
+  if (chr == ' ' || chr == '\t') {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
+int parse_line(char *line, mesh *m) {
+  char *token = line;
+  if (token[0] == '\0') {
+    return 0;
+  }
+  if (token[0] == '#') {
+    return 0;
+  }
+  if (token[0] == 'v' && is_space(token[1])) {
+    float x, y, z;
+    if (sscanf(token, "v %f %f %f", &x, &y, &z) == 3) {
 
-int parse_line(char *buffer, int diff) {
+      vec3 vertex = (vec3){x, y, z};
+      append(m->vertices, &vertex);
+      m->vert_count = m->vertices->count;
+    }
+  }
+  if (token[0] == 'v' && token[1] == 'n' && is_space(token[2])) {
+    float x, y, z;
+    if (sscanf(token, "vn %f %f %f", &x, &y, &z) == 3) {
+      vec3 normal = (vec3){x, y, z};
+      append(m->normals, &normal);
+      m->normals_count = m->normals->count;
+    }
+  }
+  if (token[0] == 'v' && token[1] == 't' && is_space(token[2])) {
 
-    char line_buff[255];
-	char* token;
-	memcpy(line_buff, buffer, diff);
-	token = line_buff;
-
-    if (token[0] == '\0') {
-        return 0;
+    float u, v;
+    if (sscanf(token, "vt %f %f", &u, &v) == 2) {
+      vec2 uvs = (vec2){u, v};
+      append(m->uvs, &uvs);
+      m->uvs_count = m->uvs->count;
     }
-    if (token[0] == '#') {
-        return 0;
+  }
+  if (token[0] == 'f' && is_space(token[1])) {
+    int v1, vt1, vn1;
+    int v2, vt2, vn2;
+    int v3, vt3, vn3;
+    // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+    if (sscanf(token, "f %d/%d/%d %d/%d/%d %d/%d/%d", &v1, &vt1, &vn1, &v2,
+               &vt2, &vn2, &v3, &vt3, &vn3) == 9) {
+      face_t face = {
+          .vertex_indices = {v1 - 1, v2 - 1, v3 - 1},
+          .uvs_indices = {vt1 - 1, vt2 - 1, vt3 - 1},
+          .normal_indices = {vn1 - 1, vn2 - 1, vn3 - 1},
+      };
+      append(m->faces, &face);
+      m->num_face_t = m->faces->count;
     }
-   if (token[0] == 'v' && is_space(token[1])) {
-        int vert_count = 0;
-        float x, y, z;
-        if (sscanf(token, "v %f %f %f", &x, &y, &z) == 3) {
-			vec3 vertex = (vec3){x,y,z};
-			append(vertex, vector);
-		}
-    }
+  }
+  return 1;
 }
 
 // NOTE: always check before using this function that
@@ -94,19 +100,22 @@ mesh *load_mesh(const char *path) {
     return NULL;
   }
 
+  mesh *mesh = malloc(sizeof(mesh));
+  mesh->vertices = make_vector(v3_type);
+  mesh->transformed_vertices = make_vector(v3_type);
+  mesh->uvs = make_vector(v2_type);
+  mesh->normals = make_vector(v3_type);
+  mesh->transformed_normals = make_vector(v3_type);
+  mesh->faces = make_vector(face_type);
+
   buffer[bytes_read] = '\0';
-
-  size_t num_lines = 0;
-  get_line_count(buffer, strlen(buffer), &num_lines);
-
-  for (int i = 0; i < strlen(buffer); ++i) {
-    char *eol = strchr(buffer, '\n');
-    if (eol == NULL) {
-      break;
-    }
-    parse_line(buffer, eol - buffer);
-
+  char *line = strtok(buffer, "\n");
+  while (line != NULL) {
+    parse_line(line, mesh);
+    line = strtok(NULL, "\n");
   }
+
+  return mesh;
 }
 
 void delete_mesh() {}
