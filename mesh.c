@@ -51,11 +51,14 @@ int parse_line(char *line, mesh *m) {
       m->uvs_count = m->uvs->count;
     }
   }
+
+  // NOTE: currently our renderer can only load a faces in this format no other
+  // format f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+
   if (token[0] == 'f' && is_space(token[1])) {
     int v1, vt1, vn1;
     int v2, vt2, vn2;
     int v3, vt3, vn3;
-    // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
     if (sscanf(token, "f %d/%d/%d %d/%d/%d %d/%d/%d", &v1, &vt1, &vn1, &v2,
                &vt2, &vn2, &v3, &vt3, &vn3) == 9) {
       face_t face = {
@@ -63,6 +66,16 @@ int parse_line(char *line, mesh *m) {
           .uvs_indices = {vt1 - 1, vt2 - 1, vt3 - 1},
           .normal_indices = {vn1 - 1, vn2 - 1, vn3 - 1},
       };
+      append(m->faces, &face);
+      m->num_face_t = m->faces->count;
+    } else if (sscanf(token, "f %d %d %d", &v1, &v2, &v3) == 3) {
+
+      face_t face = {
+          .vertex_indices = {v1 - 1, v2 - 1, v3 - 1},
+          .uvs_indices = {-1, -1, -1},
+          .normal_indices = {-1, -1, -1},
+      };
+
       append(m->faces, &face);
       m->num_face_t = m->faces->count;
     }
@@ -103,13 +116,14 @@ mesh *load_mesh(const char *path) {
     return NULL;
   }
 
-  mesh *mesh = malloc(sizeof(mesh));
-  mesh->vertices = make_vector(v3_type);
-  mesh->transformed_vertices = make_vector(v3_type);
-  mesh->uvs = make_vector(v2_type);
-  mesh->normals = make_vector(v3_type);
-  mesh->transformed_normals = make_vector(v3_type);
-  mesh->faces = make_vector(face_type);
+  mesh *mesh = malloc(sizeof(*mesh));
+  mesh->vert_count = 0;
+  mesh->uvs_count = 0;
+  mesh->normals_count = 0;
+  mesh->vertices = make_vector(v3_type, 0);
+  mesh->uvs = make_vector(v2_type, 0);
+  mesh->normals = make_vector(v3_type, 0);
+  mesh->faces = make_vector(face_type, 0);
 
   buffer[bytes_read] = '\0';
   char *line = strtok(buffer, "\n");
@@ -117,6 +131,9 @@ mesh *load_mesh(const char *path) {
     parse_line(line, mesh);
     line = strtok(NULL, "\n");
   }
+
+  mesh->transformed_vertices = make_vector(v3_type, mesh->vert_count);
+  mesh->transformed_normals = make_vector(v3_type, mesh->normals_count);
 
   free(buffer);
   fclose(f);

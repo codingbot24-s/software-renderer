@@ -55,11 +55,12 @@ vec4 v4_init(float x, float y, float z, float w) {
   };
 }
 
-// NOTE: check for null otherwise we will get the crash
 // NOTE: call to this will allocate a 8 * size of type like  8 * int
-//
-vector *make_vector(data_type type) {
+vector *make_vector(data_type type, int how_much) {
 
+  if (how_much == 0) {
+    how_much = 8;
+  }
   size_t size_of_type = 0;
   if (type == v2_type) {
     size_of_type = sizeof(vec2);
@@ -76,7 +77,8 @@ vector *make_vector(data_type type) {
   v->len = 8;
   v->count = 0;
   v->elem_type = size_of_type;
-  v->data = malloc(8 * size_of_type);
+
+  v->data = malloc(how_much * size_of_type);
   return v;
 }
 

@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // TODO: use back face culling also
 bool is_back_face(vec3 v1, vec3 v2, vec3 v3);
@@ -239,19 +241,18 @@ void fill_triangle(vec3 p1, vec3 p2, vec3 p3, uint32_t *framebuffer,
   }
 }
 
-
 void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
                    float *zbuffer, uint32_t *framebuffer) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
 
-    vec3* t_vertices = mesh->transformed_vertices->data;
-    face_t* faces = mesh->faces->data;
-	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
-    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 *t_vertices = mesh->transformed_vertices->data;
+    face_t *faces = mesh->faces->data;
+    vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];
     vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
-    vec2* uvs = mesh->uvs->data;
+    vec2 *uvs = mesh->uvs->data;
     vec2 uv1 = uvs[faces[i].uvs_indices[0]];
     vec2 uv2 = uvs[faces[i].uvs_indices[1]];
     vec2 uv3 = uvs[faces[i].uvs_indices[2]];
@@ -264,6 +265,10 @@ void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
     int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
     int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
     int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
+    minx = MAX(minx, 0);
+    maxx = MIN(maxx, WIDTH - 1);
+    miny = MAX(miny, 0);
+    maxy = MIN(maxy, HIEGHT - 1);
 
     float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
 
@@ -318,22 +323,33 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
                uint32_t color3) {
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
-   
-    vec3* t_vertices = mesh->transformed_vertices->data;
-    face_t* faces = mesh->faces->data;
-	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
-    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
-    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
+    vec3 *t_vertices = mesh->transformed_vertices->data;
+    face_t *faces = mesh->faces->data;
+    vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];
+    vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
     screen_space_vertex p1 = project_to_screen(v1, proj_matrix);
     screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
     screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
 
-    int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
-    int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
-    int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
-    int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
+    int minx = (int)floorf(fminf(p1.vertex.x,
+                              fminf(p2.vertex.x, p3.vertex.x)));
+
+    int maxx = (int)ceilf(fmaxf(p1.vertex.x,
+                                fmaxf(p2.vertex.x, p3.vertex.x)));
+
+    int miny = (int)floorf(fminf(p1.vertex.y,
+                                 fminf(p2.vertex.y, p3.vertex.y)));
+
+    int maxy = (int)ceilf(fmaxf(p1.vertex.y,
+                                fmaxf(p2.vertex.y, p3.vertex.y)));
+
+    minx = fmaxf(minx, 0);
+    miny = fmaxf(miny, 0);
+    maxx = fminf(maxx, WIDTH - 1);
+    maxy = fminf(maxy, HIEGHT - 1);
 
     float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
 
@@ -386,6 +402,11 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
           uint32_t color =
               ((uint32_t)red << 16) | ((uint32_t)green << 8) | ((uint32_t)blue);
           float z = w0 * p1.vertex.z + w1 * p2.vertex.z + w2 * p3.vertex.z;
+
+          // this is check for index out of bound
+          if (x < 0 || x >= WIDTH || y < 0 || y >= HIEGHT) {
+            continue;
+          }
           int index = y * WIDTH + x;
 
           if (z < zbuffer[index]) {
@@ -405,10 +426,10 @@ void draw_flatshaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
 
-    vec3* t_vertices = mesh->transformed_vertices->data;
-    face_t* faces = mesh->faces->data;
-	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
-    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 *t_vertices = mesh->transformed_vertices->data;
+    face_t *faces = mesh->faces->data;
+    vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];
     vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
     vec3 edge1 = v3_sub(v2, v1);
@@ -485,13 +506,13 @@ void draw_phong_shaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
 
   for (int i = 0; i < mesh->num_face_t; ++i) {
 
-    vec3* t_vertices = mesh->transformed_vertices->data;
-    face_t* faces = mesh->faces->data;
-	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
-    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 *t_vertices = mesh->transformed_vertices->data;
+    face_t *faces = mesh->faces->data;
+    vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];
     vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
-    vec3* normals = mesh->normals->data;
+    vec3 *normals = mesh->normals->data;
     vec3 n1 = normals[faces[i].normal_indices[0]];
     vec3 n2 = normals[faces[i].normal_indices[1]];
     vec3 n3 = normals[faces[i].normal_indices[2]];
@@ -570,7 +591,9 @@ void draw_phong_shaded(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
 
             uint32_t final_color =
                 ((uint32_t)red << 16 | (uint32_t)green << 8 | (uint32_t)blue);
-
+            if (x < 0 || x >= WIDTH || y < 0 || y >= HIEGHT) {
+              continue;
+            }
             put_pixel(framebuffer, point.x, point.y, final_color);
             zbuffer[index] = z;
           }
@@ -585,22 +608,21 @@ void draw_textured_phong_shaded(mesh *mesh, matrix proj_matrix,
                                 float ambient, light light, texture *texture) {
   for (int i = 0; i < mesh->num_face_t; ++i) {
 
-    vec3* t_vertices = mesh->transformed_vertices->data;
-    face_t* faces = mesh->faces->data;
-	  vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
-    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];	  
+    vec3 *t_vertices = mesh->transformed_vertices->data;
+    face_t *faces = mesh->faces->data;
+    vec3 v1 = t_vertices[faces[i].vertex_indices[0]];
+    vec3 v2 = t_vertices[faces[i].vertex_indices[1]];
     vec3 v3 = t_vertices[faces[i].vertex_indices[2]];
 
-    vec3* normals = mesh->normals->data;
+    vec3 *normals = mesh->normals->data;
     vec3 n1 = normals[faces[i].normal_indices[0]];
     vec3 n2 = normals[faces[i].normal_indices[1]];
     vec3 n3 = normals[faces[i].normal_indices[2]];
 
-    vec2* uvs = mesh->uvs->data;
+    vec2 *uvs = mesh->uvs->data;
     vec2 uv1 = uvs[faces[i].uvs_indices[0]];
     vec2 uv2 = uvs[faces[i].uvs_indices[1]];
     vec2 uv3 = uvs[faces[i].uvs_indices[2]];
-
 
     if (is_back_face(v1, v2, v3)) {
       continue;

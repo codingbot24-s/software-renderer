@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.1)
 project(srenderer C)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Find the SDL3 package
 find_package(SDL3 REQUIRED)
@@ -31,3 +32,15 @@ target_link_libraries(c PRIVATE
         m
         SDL3_image::SDL3_image
 )
+
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(c PRIVATE
+            -fsanitize=address
+            -fno-omit-frame-pointer
+            -g
+    )
+
+    target_link_options(c PRIVATE
+            -fsanitize=address
+    )
+endif()

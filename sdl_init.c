@@ -2,7 +2,8 @@
 // Created by saad on 8/3/26.
 //
 
-// TODO: we can add aspect ratio and correct width and hieght in window opening 
+// TODO: we can add aspect ratio and correct width and hieght in window opening
+// TODO: check is ligh working correctly
 
 #include "sdl_init.h"
 #include "constant.h"
@@ -12,7 +13,6 @@
 #include "texture.h"
 #include "vec.h"
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_gpu.h>
 #include <float.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -51,12 +51,12 @@ int create_sdl_window() {
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888,
                         SDL_TEXTUREACCESS_STREAMING, WIDTH, HIEGHT);
 
-  float z_buffer[WIDTH * HIEGHT];
+  float *z_buffer = malloc(WIDTH * HIEGHT * sizeof(float));
 
   vec3 rotation = {0.0, 0.0, 0.0};
 
   vec3 eye = (vec3){0.0, 0.0, -3.0};
-  vec3 target = (vec3){0.0, 0.0, -1.0};
+  vec3 target = (vec3){0.0, 0.0, 0.0};
 
   matrix proj_matrix =
       make_projection_matrix(WIDTH, HIEGHT, FOV, FAR_PLANE, NEAR_PLANE);
@@ -64,15 +64,22 @@ int create_sdl_window() {
   matrix l_v_m = make_view_matrix(eye, target);
   light l =
       make_light((vec3){0.0, 0.0, 0.0}, l_v_m, (vec3){0.0, 1.0, 0.0}, 1.0);
-  mesh *mesh = load_mesh("/home/saad/code/c/software-renderer/cube.obj");
+  mesh *mesh =
+      load_mesh("/home/saad/code/c/software-renderer/homer.obj");
+
+  // mesh *mesh = load_mesh("/home/saad/code/c/software-renderer/cube.obj");
   if (mesh == NULL) {
     fprintf(stderr, "Cant load the mesh \n");
-    EXIT_FAILURE;
+    exit(EXIT_FAILURE);
   }
-  struct texture loaded_texture = load_texture_from_file("/home/saad/code/c/software-renderer/image/uv_checker_512.png");
-  
-  uint32_t light_color = 0xFFFFFF;
-  
+  struct texture loaded_texture = load_texture_from_file(
+      "/home/saad/code/c/software-renderer/image/uv_checker_512.png");
+
+  uint32_t light_color = 0x000000;
+  uint32_t blue = 0x0000FF;
+  uint32_t green = 0x00FF00;
+  uint32_t red = 0xFF0000;
+
   SDL_Event event;
   while (running == true) {
     while (SDL_PollEvent(&event)) {
@@ -85,7 +92,6 @@ int create_sdl_window() {
         break;
       }
     }
-
     matrix t_matrix = make_translation_matrix(0.0, 0.0, 0.0);
     matrix r_matrix = make_rotation_matrix(rotation.x, rotation.y, rotation.z);
     matrix s_matrix = make_scaling_matrix(1.0, 1.0, 1.0);
@@ -104,18 +110,21 @@ int create_sdl_window() {
     // draw_textured(mesh, proj_matrix, &loaded_texture, z_buffer,
     // frame_buffer);
 
+    // draw_textured_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer,
+    // 0.2,
+    //                            l, &loaded_texture);
+
+    draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, red,
+              red,red);
     rotation.x += 1.0;
-    //    draw_fill(mesh, proj_matrix, frame_buffer, z_buffer, color1, color2,
-    //              color3);
 
     // draw_flatshaded(mesh, proj_matrix, frame_buffer, z_buffer, color1, 0.2,
     //                 light);
 
-    //draw_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer, light_color, 0.2,
-    //                  l);
-  
-    draw_textured_phong_shaded(mesh,proj_matrix,frame_buffer,z_buffer,0.2 ,l, &loaded_texture);
-    
+    // draw_phong_shaded(mesh, proj_matrix, frame_buffer, z_buffer, light_color,
+    //                    0.2, l);
+
+    // we will fix this
     SDL_UpdateTexture(texture, NULL, frame_buffer, WIDTH * sizeof(uint32_t));
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);
@@ -135,25 +144,19 @@ void clean_zbuffer(float *z_buffer) {
   }
 }
 
-
-// TEST this function its not been tested after cast
 void apply_transformation_normals(mesh *mesh, matrix view_matrix) {
-  // problem: we have changed the structer of mesh from vec3* vector* so we need
-  // to change the function calls that return vec3* we can cast this vector* or
-  // do something else
-   vec3* t_normals = (vec3*)mesh->transformed_normals->data;
-    vec3* normals = (vec3*)mesh->normals->data;
-	  for (int i = 0; i < mesh->normals_count; ++i) {
-	  t_normals[i] =
-        matrix_mul_vec3(view_matrix, normals[i]);
+  vec3 *t_normals = mesh->transformed_normals->data;
+  vec3 *normals = mesh->normals->data;
+  for (int i = 0; i < mesh->normals_count; ++i) {
+
+    t_normals[i] = matrix_mul_vec3(view_matrix, normals[i]);
   }
 }
 
 void apply_transformation(mesh *mesh, matrix view_matrix) {
-  vec3* transformed_vertices = mesh->transformed_vertices->data;
-  vec3* vertices = mesh->vertices->data;
+  vec3 *transformed_vertices = mesh->transformed_vertices->data;
+  vec3 *vertices = mesh->vertices->data;
   for (int i = 0; i < mesh->vert_count; ++i) {
-    transformed_vertices[i] =
-        matrix_mul_vec3(view_matrix, vertices[i]);
+    transformed_vertices[i] = matrix_mul_vec3(view_matrix, vertices[i]);
   }
 }

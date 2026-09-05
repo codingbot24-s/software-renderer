@@ -42,5 +42,5 @@ typedef struct vector {
   data_type type;
 } vector;
 
-vector *make_vector(data_type type);
+vector *make_vector(data_type type, int how_much);
 void append(vector *vec, void *elem);

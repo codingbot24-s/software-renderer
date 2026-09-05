@@ -1,12 +1,14 @@
 
+
+// NOTE: currently our renderer can only load a faces in this format no other
+// format f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 and f v1 v2 v3
+// one way is to use the existing loader so we can load any model
+// because some model we are testing dont have normals we cant use phong shading
+// on those we will get the crash if we try to use them with phong shaded
+
+// TODO: add input for making model big and small and moving camera first
+
 /*
-  1 Create a general-purpose 3D mesh representation that stores vertices
-  (position, normal, UV) and indexed triangles, independent of your cube.
-  2 Implement an OBJ file loader that reads vertex positions, texture
-  coordinates, normals, and face indices and converts them into your mesh
-  representation.
-  3 Load a real OBJ model at runtime and render it through your
-  complete software-rendering pipeline.
   4 add material and texture support to
   your OBJ model loader, then render the model using its own textures instead of
   a hardcoded texture.
