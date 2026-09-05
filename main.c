@@ -5,8 +5,6 @@
 // one way is to use the existing loader so we can load any model
 // because some model we are testing dont have normals we cant use phong shading
 // on those we will get the crash if we try to use them with phong shaded
-
-
 // NOTE: If loaded object doesnt have uvs and normals loading that object with any light mod e flat shaded or phong shaded will result in segfault
 
 
@@ -16,7 +14,7 @@
   4 add material and texture support to
   your OBJ model loader, then render the model using its own textures instead of
   a hardcoded texture.
-
+  // NOTE: only this todo is remaning
   5. Implement a movable 3D camera with position and orientation controls, and
   use it to freely move around and inspect your rendered model in real time.
 */
