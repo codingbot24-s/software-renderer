@@ -6,7 +6,11 @@
 // because some model we are testing dont have normals we cant use phong shading
 // on those we will get the crash if we try to use them with phong shaded
 
-// TODO: add input for making model big and small and moving camera first
+
+// NOTE: If loaded object doesnt have uvs and normals loading that object with any light mod e flat shaded or phong shaded will result in segfault
+
+
+ 
 
 /*
   4 add material and texture support to
