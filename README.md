@@ -2,6 +2,10 @@ The goal of this project is to understand how a basic graphics pipeline works in
 
 This project is intentionally small and educational rather than production-ready. It focuses on learning how pixels, geometry, transformations, rasterization, depth testing, textures, and lighting come together to produce a 3D image.
 
+📺 Built Live on Stream
+Built this software renderer live on stream from scratch 70% is in the stream, exploring the rendering pipeline step by step.
+🎥 [Watch the stream on YouTube](https://www.youtube.com/@devNobu/playlists)
+
 1. Framebuffer + Pixel Output
 
 A software framebuffer for storing and directly manipulating individual pixels.
@@ -57,7 +61,5 @@ Loads and renders a real 3D model through the software rendering pipeline.
 ![statue](assets/statue-textured-metal.png)
 ![statue](assets/statue-textured-phong-shaded.png)
 
-📺 Built Live on Stream
-Built this software renderer live on stream from scratch 70% is in the stream, exploring the rendering pipeline step by step.
-🎥 [Watch the stream on YouTube](https://www.youtube.com/@devNobu/playlists)
+
 
