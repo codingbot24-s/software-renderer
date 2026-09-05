@@ -261,14 +261,18 @@ void draw_textured(mesh *mesh, matrix proj_matrix, texture *texture,
     screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
     screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
 
-    int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
-    int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
-    int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
-    int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
-    minx = MAX(minx, 0);
-    maxx = MIN(maxx, WIDTH - 1);
-    miny = MAX(miny, 0);
-    maxy = MIN(maxy, HIEGHT - 1);
+    int minx = (int)floorf(fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x)));
+
+    int maxx = (int)ceilf(fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x)));
+
+    int miny = (int)floorf(fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y)));
+
+    int maxy = (int)ceilf(fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y)));
+
+    minx = fmaxf(minx, 0);
+    miny = fmaxf(miny, 0);
+    maxx = fminf(maxx, WIDTH - 1);
+    maxy = fminf(maxy, HIEGHT - 1);
 
     float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
 
@@ -334,17 +338,13 @@ void draw_fill(mesh *mesh, matrix proj_matrix, uint32_t *framebuffer,
     screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
     screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
 
-    int minx = (int)floorf(fminf(p1.vertex.x,
-                              fminf(p2.vertex.x, p3.vertex.x)));
+    int minx = (int)floorf(fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x)));
 
-    int maxx = (int)ceilf(fmaxf(p1.vertex.x,
-                                fmaxf(p2.vertex.x, p3.vertex.x)));
+    int maxx = (int)ceilf(fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x)));
 
-    int miny = (int)floorf(fminf(p1.vertex.y,
-                                 fminf(p2.vertex.y, p3.vertex.y)));
+    int miny = (int)floorf(fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y)));
 
-    int maxy = (int)ceilf(fmaxf(p1.vertex.y,
-                                fmaxf(p2.vertex.y, p3.vertex.y)));
+    int maxy = (int)ceilf(fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y)));
 
     minx = fmaxf(minx, 0);
     miny = fmaxf(miny, 0);
@@ -632,10 +632,19 @@ void draw_textured_phong_shaded(mesh *mesh, matrix proj_matrix,
     screen_space_vertex p2 = project_to_screen(v2, proj_matrix);
     screen_space_vertex p3 = project_to_screen(v3, proj_matrix);
 
-    int minx = fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x));
-    int maxx = fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x));
-    int miny = fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y));
-    int maxy = fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y));
+    int minx = (int)floorf(fminf(p1.vertex.x, fminf(p2.vertex.x, p3.vertex.x)));
+
+    int maxx = (int)ceilf(fmaxf(p1.vertex.x, fmaxf(p2.vertex.x, p3.vertex.x)));
+
+    int miny = (int)floorf(fminf(p1.vertex.y, fminf(p2.vertex.y, p3.vertex.y)));
+
+    int maxy = (int)ceilf(fmaxf(p1.vertex.y, fmaxf(p2.vertex.y, p3.vertex.y)));
+
+    minx = fmaxf(minx, 0);
+    miny = fmaxf(miny, 0);
+    maxx = fminf(maxx, WIDTH - 1);
+    maxy = fminf(maxy, HIEGHT - 1);
+
     float area = edge_function(p1.vertex, p2.vertex, p3.vertex);
     for (int x = minx; x < maxx; ++x) {
       for (int y = miny; y < maxy; ++y) {

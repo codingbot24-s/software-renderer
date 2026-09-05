@@ -25,6 +25,8 @@ add_executable(c
         texture.c
         light.h
         light.c
+        input.h
+        input.c
 )
 
 target_link_libraries(c PRIVATE
