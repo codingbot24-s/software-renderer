@@ -74,7 +74,7 @@ int create_sdl_window() {
  //mesh *mesh =
  //    load_mesh("/home/saad/code/c/software-renderer/max-planck.obj");
 
-  mesh *mesh = load_mesh("/home/saad/code/c/software-renderer/cube.obj");
+  mesh *mesh = load_mesh("/home/saad/code/c/software-renderer/crab.obj");
   if (mesh == NULL) {
     fprintf(stderr, "Cant load the mesh \n");
     exit(EXIT_FAILURE);

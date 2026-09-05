@@ -7,8 +7,7 @@
 // on those we will get the crash if we try to use them with phong shaded
 // NOTE: If loaded object doesnt have uvs and normals loading that object with any light mod e flat shaded or phong shaded will result in segfault
 
-
- 
+// NOTE: There are memory leaks in renderer and we will implement free for them 
 
 /*
   4 add material and texture support to
